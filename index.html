@@ -3,44 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>보안 정책표 접속</title>
+    <title>에셀트리 보안 정책실 - 단가표 접속</title>
     <style>
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; background: #f5f5f5; }
-        .login-box { text-align: center; padding-top: 100px; }
-        .box { background: white; padding: 40px; display: inline-block; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input { padding: 10px; font-size: 16px; width: 200px; text-align: center; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 5px; }
-        #sheet-frame { width: 100%; height: 100%; border: none; display: none; }
+        /* [공통] 기본 스타일 */
+        body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: start; min-height: 100vh; }
+        
+        /* [로그인 화면] 스타일 (정중앙 배치) */
+        #login-view { text-align: center; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-box { background: white; padding: 50px 40px; display: inline-block; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .login-box h2 { margin-top: 0; color: #333; font-size: 24px; margin-bottom: 10px; }
+        .login-box p { color: #666; margin-bottom: 30px; }
+        .login-box input { padding: 15px; font-size: 18px; width: 240px; text-align: center; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; transition: all 0.3s; }
+        .login-box input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 10px rgba(0,123,255,0.1); }
+        .login-box button { padding: 15px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 100%; box-sizing: border-box; font-weight: bold; transition: background 0.3s; }
+        .login-box button:hover { background: #0056b3; }
+        .login-box .hint { font-size: 14px; color: #999; margin-top: 25px; margin-bottom: 0; }
+
+        /* [단가표 화면] 스타일 (세로 나열) */
+        #price-view { display: none; text-align: center; padding: 30px 15px; width: 100%; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
+        
+        /* ✨ [사장님 요청] 페이지 상단 예쁜 타이틀 바 스타일 */
+        .page-header { background: #fff; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 25px; border-left: 5px solid #007bff; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+        .page-header h1 { margin: 0; font-size: 20px; color: #333; }
+        .page-header .status { font-size: 14px; color: #28a745; font-weight: bold; background: #e8f5e9; padding: 5px 10px; border-radius: 20px; }
+
+        /* 이미지 스타일 */
+        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 25px; /* 이미지 간 간격 */ display: block; margin-left: auto; margin-right: auto; }
+        
+        /* 모바일 대응 */
+        @media (max-width: 600px) {
+            .login-box { padding: 40px 20px; width: 90%; box-sizing: border-box; }
+            .login-box input { width: 100%; box-sizing: border-box; }
+            .page-header h1 { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
-    <div id="login-view" class="login-box">
-        <div class="box">
+
+    <!-- [1] 로그인 화면 -->
+    <div id="login-view">
+        <div class="login-box">
             <h2>🔒 에셀트리 보안 정책실</h2>
             <p>인증 비밀번호 4자리를 입력하세요.</p>
             <input type="password" id="pw" placeholder="비밀번호 입력">
             <button onclick="checkPw()">확인</button>
+            <p class="hint">문의: 각 대리점 담당자</p>
         </div>
     </div>
 
-    <!-- 비밀번호 성공 시 시트가 뜰 화면 -->
-    <iframe id="sheet-frame"></iframe>
+    <!-- [2] 비밀번호 성공 시 단가표 화면 -->
+    <div id="price-view">
+        
+        <!-- ✨ [사장님 요청] 페이지 상단 예쁜 타이틀 바 -->
+        <div class="page-header">
+            <h1>KT MNO 외국인전용 정책표</h1>
+            <span class="status">● 보안접속완료</span>
+        </div>
+
+        <!-- 💡 올리신 이미지 파일명과 개수에 맞춰서 아래 <img> 태그를 수정하세요! -->
+        <img src="price_01.png" alt="에셀트리 단가표 1">
+        <div class="page-header">
+            <h1>LG MNO 외국인전용 정책표</h1>
+            <span class="status">● 보안접속완료</span>
+        </div>
+        <img src="price_02.png" alt="에셀트리 단가표 2">
+        <div class="page-header">
+            <h1>알뜰모바일 대기업 자회사</h1>
+            <span class="status">● 보안접속완료</span>
+        </div>
+        <img src="price_03.png" alt="에셀트리 단가표 3">
+        <div class="page-header">
+            <h1>알뜰모바일 중소기업</h1>
+            <span class="status">● 보안접속완료</span>
+        </div>
+        <img src="price_04.png" alt="에셀트리 단가표 4">
+        <div class="page-header">
+            <h1>KT M모바일 A175 단말기</h1>
+            <span class="status">● 보안접속완료</span>
+        </div>
+        <img src="price_05.png" alt="에셀트리 단가표 5">
+        <div class="page-header">
+            <h1>선불</h1>
+            <span class="status">● 보안접속완료</span>
+        </div>
+        <img src="price_06.png" alt="에셀트리 단가표 6">
+        <!-- 이미지가 더 있다면 여기에 <img> 태그를 계속 추가하세요 -->
+    </div>
 
     <script>
         function checkPw() {
             var input = document.getElementById('pw').value;
             
-            var realPassword = "7000"; 
-            // 💡 구글시트에서 [파일] -> [공유] -> [웹에 게시] 한 링크나 게시용 HTML 주소를 넣으면 더 깔끔합니다.
-            var googleSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-Kp6-DZwwFn6g1r4ABusqkM3YWFxDeFfDt1-o_ukG_b2HlMngrgcVy8EPCAVdEDqYEASGiVo1BO7P/pubhtml"; 
+            // 💡 사장님의 비밀번호 4자리로 수정하세요!
+            var realPassword = "7700"; 
 
             if(input === realPassword) {
-                document.getElementById('login-view').style.display = 'none';
-                var iframe = document.getElementById('sheet-frame');
-                iframe.src = googleSheetUrl;
-                iframe.style.display = 'block';
+                // 성공: 로그인 창 숨기고 이미지 창 보이기
+                document.getElementById('login-view').style.setProperty('display', 'none', 'important');
+                document.getElementById('price-view').style.display = 'block';
+                // 스크롤을 맨 위로 이동
+                window.scrollTo(0, 0);
             } else {
                 alert("비밀번호가 올바르지 않습니다. 대리점으로 문의하세요.");
+                document.getElementById('pw').value = ""; // 입력창 비우기
+                document.getElementById('pw').focus(); // 입력창에 다시 포커스
             }
         }
     </script>
