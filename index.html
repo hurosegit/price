@@ -3,87 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>에셀트리 보안 정책실 - 단가표 접속</title>
-    <!-- HTML Canvas를 JPG 이미지로 변환 및 다운로드하기 위한 무료 외부 라이브러리 -->
+    <title>에셀트리 보안 정책실 - 단가표 및 개통신청</title>
+    <!-- HTML Canvas 이미지 변환 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* [공통] 기본 스타일 */
-        body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: start; min-height: 100vh; }
+        body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; min-height: 100vh; }
         
-        /* [로그인 화면] 스타일 (정중앙 배치) */
+        /* [1] 로그인 화면 */
         #login-view { text-align: center; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-box { background: white; padding: 50px 40px; display: inline-block; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .login-box { background: white; padding: 50px 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .login-box h2 { margin-top: 0; color: #333; font-size: 24px; margin-bottom: 10px; }
         .login-box p { color: #666; margin-bottom: 30px; }
-        .login-box input { padding: 15px; font-size: 18px; width: 240px; text-align: center; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; transition: all 0.3s; }
-        .login-box input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 10px rgba(0,123,255,0.1); }
-        .login-box button { padding: 15px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 100%; box-sizing: border-box; font-weight: bold; transition: background 0.3s; }
+        .login-box input { padding: 15px; font-size: 18px; width: 240px; text-align: center; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; }
+        .login-box input:focus { outline: none; border-color: #007bff; }
+        .login-box button { padding: 15px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 100%; font-weight: bold; }
         .login-box button:hover { background: #0056b3; }
         .login-box .hint { font-size: 14px; color: #999; margin-top: 25px; margin-bottom: 0; }
 
-        /* [단가표 화면] 스타일 (세로 나열) */
+        /* [2] 단가표 화면 */
         #price-view { display: none; text-align: center; padding: 30px 15px; width: 100%; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
-        
-        /* 페이지 상단 예쁜 타이틀 바 스타일 */
         .page-header { background: #fff; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px; margin-top: 25px; border-left: 5px solid #007bff; text-align: left; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         .page-header:first-child { margin-top: 0; }
         .page-header h1 { margin: 0; font-size: 20px; color: #333; flex-grow: 1; }
-        
-        /* [개통하러 가기] 버튼 스타일 */
-        .btn-apply { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap; }
+        .btn-apply { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap; }
         .btn-apply:hover { background: #218838; transform: translateY(-1px); }
+        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; cursor: zoom-in; }
 
-        /* 이미지 스타일 */
-        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; cursor: zoom-in; transition: transform 0.2s; }
-        #price-view img:hover { transform: scale(1.01); }
-        
-        /* [공통 팝업 모달] */
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow-y: auto; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); -webkit-overflow-scrolling: touch; }
-        .modal-content { margin: 50px auto 30px auto; display: block; width: 98%; max-width: 1200px; height: auto; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); animation: zoom 0.2s; }
-        .close-btn { position: fixed; top: 15px; right: 20px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 10000; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.5); width: 45px; height: 45px; line-height: 40px; text-align: center; border-radius: 50%; }
-        .modal-hint { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 13px; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 20px; pointer-events: none; z-index: 10000; }
+        /* [3] 개통 신청 전용 독립 페이지 (단가표 대체) */
+        #apply-view { display: none; width: 100%; max-width: 1100px; margin: 0 auto; padding: 30px 15px; box-sizing: border-box; }
+        .apply-card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .apply-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
+        .apply-header h2 { margin: 0; font-size: 22px; color: #333; }
+        .btn-back { background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: bold; }
+        .btn-back:hover { background: #5a6268; }
 
-        /* [개통 작성 팝업 전용 레이아웃] */
-        .apply-modal-box { background: #f8f9fa; width: 95%; max-width: 1100px; margin: 40px auto; border-radius: 12px; padding: 25px; box-sizing: border-box; text-align: left; position: relative; }
-        .apply-section-header { background: #fff; padding: 12px 18px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .apply-section-header h2 { margin: 0; font-size: 18px; color: #333; }
+        .apply-section-header { background: #f8f9fa; padding: 12px 18px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
+        .apply-section-header h3 { margin: 0; font-size: 16px; color: #333; }
         
-        .example-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 25px; }
-        .example-container img { height: 200px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; }
-        
+        .example-container { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 25px; }
+        .example-container img { height: 180px; border-radius: 6px; border: 1px solid #ddd; cursor: zoom-in; transition: transform 0.2s; }
+        .example-container img:hover { transform: scale(1.02); }
+
         .form-workspace { display: flex; gap: 20px; flex-wrap: wrap; }
-        .thumbs-sidebar { display: flex; flex-direction: column; gap: 10px; width: 130px; }
-        .thumb-box { text-align: center; font-size: 12px; color: #666; font-weight: bold; }
-        .thumb-img { width: 100%; border-radius: 6px; border: 2px solid #ddd; cursor: pointer; transition: all 0.2s; }
+        .thumbs-sidebar { display: flex; flex-direction: column; gap: 12px; width: 140px; }
+        .thumb-box { text-align: center; font-size: 12px; color: #666; font-weight: bold; cursor: pointer; }
+        .thumb-img { width: 100%; border-radius: 6px; border: 2px solid #ddd; transition: all 0.2s; background: #fff; }
         .thumb-img.active { border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.5); }
         
-        .form-inputs { flex: 1; min-width: 280px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form-inputs { flex: 1; min-width: 280px; background: #fafafa; padding: 20px; border-radius: 8px; border: 1px solid #eee; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-group { margin-bottom: 12px; }
         .form-group.full { grid-column: span 2; }
-        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 4px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         
         .btn-submit { background: #007bff; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
         .btn-submit:hover { background: #0056b3; }
 
-        .preview-area { margin-top: 20px; text-align: center; background: #eee; padding: 15px; border-radius: 8px; }
-        .preview-area canvas { max-width: 100%; height: auto; border: 1px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .preview-area { margin-top: 25px; text-align: center; background: #e9ecef; padding: 20px; border-radius: 8px; }
+        .preview-area canvas { max-width: 100%; height: auto; border: 1px solid #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #fff; }
 
-        @keyframes zoom {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        /* [4] 최상단 팝업 모달 (이미지 확대용 전용) */
+        .modal { display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; overflow-y: auto; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
+        .modal-content { margin: 40px auto; display: block; width: 95%; max-width: 1100px; height: auto; border-radius: 6px; }
+        .close-btn { position: fixed; top: 15px; right: 20px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 100000; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.5); width: 45px; height: 45px; line-height: 40px; text-align: center; border-radius: 50%; }
 
-        /* 모바일 대응 */
         @media (max-width: 600px) {
-            .login-box { padding: 40px 20px; width: 90%; box-sizing: border-box; }
-            .login-box input { width: 100%; box-sizing: border-box; }
-            .page-header h1 { font-size: 16px; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group.full { grid-column: span 1; }
             .thumbs-sidebar { flex-direction: row; width: 100%; overflow-x: auto; }
-            .thumb-box { width: 70px; flex-shrink: 0; }
+            .thumb-box { width: 75px; flex-shrink: 0; }
         }
     </style>
 </head>
@@ -94,74 +84,65 @@
         <div class="login-box">
             <h2>🔒 에셀트리 보안 정책실</h2>
             <p>인증 비밀번호 4자리를 입력하세요.</p>
-            
             <form action="javascript:void(0);" onsubmit="checkPw(); return false;">
-                <input type="password" id="pw" placeholder="비밀번호 입력" required autofocus onkeydown="if(event.keyCode===13 || event.key==='Enter'){ checkPw(); }">
+                <input type="password" id="pw" placeholder="비밀번호 입력" required autofocus>
                 <button type="button" onclick="checkPw()">확인</button>
             </form>
-
             <p class="hint">문의: 이상진 과장 010-5707-7000</p>
         </div>
     </div>
 
-    <!-- [2] 비밀번호 성공 시 단가표 화면 -->
+    <!-- [2] 단가표 화면 -->
     <div id="price-view">
-        
         <div class="page-header">
             <h1>KT MNO 외국인전용 정책표</h1>
-            <button class="btn-apply" onclick="openApplyModal()">개통하러 가기 🚀</button>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
         </div>
         <img src="price_01.png" alt="에셀트리 단가표 1" onclick="openModal(this)">
 
         <div class="page-header">
             <h1>LG MNO 외국인전용 정책표</h1>
-            <button class="btn-apply" onclick="openApplyModal()">개통하러 가기 🚀</button>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
         </div>
         <img src="price_02.png" alt="에셀트리 단가표 2" onclick="openModal(this)">
 
         <div class="page-header">
             <h1>알뜰모바일 대기업 자회사</h1>
-            <button class="btn-apply" onclick="openApplyModal()">개통하러 가기 🚀</button>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
         </div>
         <img src="price_03.png" alt="에셀트리 단가표 3" onclick="openModal(this)">
 
         <div class="page-header">
             <h1>알뜰모바일 중소기업</h1>
-            <button class="btn-apply" onclick="openApplyModal()">개통하러 가기 🚀</button>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
         </div>
         <img src="price_04.png" alt="에셀트리 단가표 4" onclick="openModal(this)">
 
         <div class="page-header">
             <h1>KT M모바일 A175 단말기</h1>
-            <button class="btn-apply" onclick="openApplyModal()">개통하러 가기 🚀</button>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
         </div>
         <img src="price_05.png" alt="에셀트리 단가표 5" onclick="openModal(this)">
 
         <div class="page-header">
             <h1>선불</h1>
-            <button class="btn-apply" onclick="openApplyModal()">개통하러 가기 🚀</button>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
         </div>
         <img src="price_06.png" alt="에셀트리 단가표 6" onclick="openModal(this)">
-
     </div>
 
-    <!-- [3] 이미지 크게 보기 팝업 창 (단가표 전용) -->
-    <div id="imageModal" class="modal" onclick="closeModal(event)">
-        <span class="close-btn" onclick="closeModal(event)">&times;</span>
-        <img class="modal-content" id="modalImg">
-        <div class="modal-hint">닫기: 우측상단 ✕ 버튼 또는 여백 터치</div>
-    </div>
-
-    <!-- [4] 개통 작성 신청 전용 모달 -->
-    <div id="applyModal" class="modal" onclick="closeApplyModal(event)">
-        <span class="close-btn" onclick="closeApplyModal(event)">&times;</span>
-        
-        <div class="apply-modal-box" onclick="event.stopPropagation()">
-            <!-- 1. 상단 타이틀 바: 작성예시 -->
-            <div class="apply-section-header">
-                <h2>📖 작성예시</h2>
+    <!-- [3] 개통 작성 독립 페이지 -->
+    <div id="apply-view">
+        <div class="apply-card">
+            <div class="apply-header">
+                <h2>📝 개통 신청서 작성</h2>
+                <button class="btn-back" onclick="showPricePage()">◀ 단가표로 돌아가기</button>
             </div>
-            <!-- 상단 작성예시 서식지 이미지 4장 -->
+
+            <!-- 작성 예시 영역 -->
+            <div class="apply-section-header">
+                <h3>📖 작성예시 (이미지를 클릭하면 크게 확대됩니다)</h3>
+            </div>
             <div class="example-container">
                 <img src="1.jpg" alt="작성예시 1" onclick="openModal(this)">
                 <img src="2.jpg" alt="작성예시 2" onclick="openModal(this)">
@@ -169,32 +150,32 @@
                 <img src="4.jpg" alt="작성예시 4" onclick="openModal(this)">
             </div>
 
-            <!-- 2. 하단 타이틀 바: 서식지 작성 -->
+            <!-- 서식지 입력 영역 -->
             <div class="apply-section-header">
-                <h2>✍️ 서식지 작성</h2>
+                <h3>✍️ 서식지 정보 입력</h3>
             </div>
             <div class="form-workspace">
-                <!-- 왼쪽 원본 서식지 작은 이미지 4장 (클릭 시 해당 서식 미리보기 전환) -->
+                <!-- 원본 서식지 선택 사이드바 -->
                 <div class="thumbs-sidebar">
-                    <div class="thumb-box">
-                        <img src="form_01.png" class="thumb-img active" id="thumb1" onclick="selectForm(1)">
+                    <div class="thumb-box" onclick="selectForm(1)">
+                        <img src="form_01.png" class="thumb-img active" id="thumb1" onerror="this.src='1.jpg'">
                         <span>1. KT 서비스신청서</span>
                     </div>
-                    <div class="thumb-box">
-                        <img src="form_02.png" class="thumb-img" id="thumb2" onclick="selectForm(2)">
+                    <div class="thumb-box" onclick="selectForm(2)">
+                        <img src="form_02.png" class="thumb-img" id="thumb2" onerror="this.src='2.jpg'">
                         <span>2. KT 무선신청서</span>
                     </div>
-                    <div class="thumb-box">
-                        <img src="form_03.png" class="thumb-img" id="thumb3" onclick="selectForm(3)">
+                    <div class="thumb-box" onclick="selectForm(3)">
+                        <img src="form_03.png" class="thumb-img" id="thumb3" onerror="this.src='3.jpg'">
                         <span>3. 개인정보동의(1)</span>
                     </div>
-                    <div class="thumb-box">
-                        <img src="form_04.png" class="thumb-img" id="thumb4" onclick="selectForm(4)">
+                    <div class="thumb-box" onclick="selectForm(4)">
+                        <img src="form_04.png" class="thumb-img" id="thumb4" onerror="this.src='4.jpg'">
                         <span>4. 개인정보동의(2)</span>
                     </div>
                 </div>
 
-                <!-- 오른쪽 서식지에 자동 입력될 정보 폼 -->
+                <!-- 정보 입력 폼 -->
                 <div class="form-inputs">
                     <div class="form-grid">
                         <div class="form-group">
@@ -231,26 +212,29 @@
                 </div>
             </div>
 
-            <!-- 현재 선택된 서식지 텍스트 자동 합성 실시간 미리보기 Canvas -->
+            <!-- 실시간 자동 합성 미리보기 -->
             <div class="preview-area">
-                <p style="margin: 0 0 10px 0; font-size:13px; color:#666; font-weight:bold;">[실시간 서식지 자동 작성 미리보기]</p>
+                <p style="margin: 0 0 10px 0; font-size:13px; color:#555; font-weight:bold;">[실시간 서식지 자동 작성 미리보기]</p>
                 <canvas id="formCanvas" width="1200" height="1600"></canvas>
             </div>
         </div>
     </div>
 
-    <script>
-        var currentFormIdx = 1; // 현재 선택된 서식지 번호 (1~4)
+    <!-- [4] 이미지 확대용 전용 팝업 모달 -->
+    <div id="imageModal" class="modal" onclick="closeModal(event)">
+        <span class="close-btn" onclick="closeModal(event)">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
 
-        // 비밀번호 확인
+    <script>
+        var currentFormIdx = 1;
+
+        // 비밀번호 체크
         function checkPw() {
             var input = document.getElementById('pw').value;
-            var realPassword = "7000";
-
-            if(input === realPassword) {
+            if(input === "7000") {
                 document.getElementById('login-view').style.setProperty('display', 'none', 'important');
-                document.getElementById('price-view').style.display = 'block';
-                window.scrollTo(0, 0);
+                showPricePage();
             } else {
                 alert("비밀번호가 올바르지 않습니다. 이상진과장 010-5707-7000으로 문의하세요.");
                 document.getElementById('pw').value = "";
@@ -258,7 +242,21 @@
             }
         }
 
-        // 이미지 확대 팝업 열기
+        // 페이지 전환 함수
+        function showPricePage() {
+            document.getElementById('price-view').style.display = 'block';
+            document.getElementById('apply-view').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        function showApplyPage() {
+            document.getElementById('price-view').style.display = 'none';
+            document.getElementById('apply-view').style.display = 'block';
+            window.scrollTo(0, 0);
+            selectForm(1);
+        }
+
+        // 이미지 확대 모달
         function openModal(imgElement) {
             var modal = document.getElementById("imageModal");
             var modalImg = document.getElementById("modalImg");
@@ -267,41 +265,34 @@
             modal.scrollTop = 0;
         }
 
-        // 이미지 확대 팝업 닫기
         function closeModal(event) {
             if (!event || event.target.id === "imageModal" || event.target.className === "close-btn") {
                 document.getElementById("imageModal").style.display = "none";
             }
         }
 
-        // 개통 모달 열기/닫기
-        function openApplyModal() {
-            document.getElementById("applyModal").style.display = "block";
-            selectForm(1);
-        }
-
-        function closeApplyModal(event) {
-            if (!event || event.target.id === "applyModal" || event.target.className === "close-btn") {
-                document.getElementById("applyModal").style.display = "none";
-            }
-        }
-
-        // 썸네일 클릭 시 서식지 변경
+        // 썸네일 선택
         function selectForm(idx) {
             currentFormIdx = idx;
             for(var i=1; i<=4; i++) {
-                document.getElementById("thumb" + i).classList.remove("active");
+                var thumb = document.getElementById("thumb" + i);
+                if(thumb) thumb.classList.remove("active");
             }
-            document.getElementById("thumb" + idx).classList.add("active");
+            var activeThumb = document.getElementById("thumb" + idx);
+            if(activeThumb) activeThumb.classList.add("active");
             renderCanvas();
         }
 
-        // Canvas 기술을 이용해 원본 서식지에 텍스트 합성 (좌표 기반)
+        // Canvas 실시간 도면화
         function renderCanvas() {
             var canvas = document.getElementById("formCanvas");
             var ctx = canvas.getContext("2d");
 
-            // 입력값 가져오기
+            // 1. 기본 배경을 흰색으로 강제 지정 (검은색 다운로드 방지)
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 입력값
             var name = document.getElementById("custName").value || "홍길동";
             var birth = document.getElementById("custBirth").value || "011129";
             var addr = document.getElementById("custAddr").value || "서울시 중구 장충단로...";
@@ -311,58 +302,67 @@
             var dateStr = document.getElementById("applyDate").value || "2026. 03. 18";
 
             var img = new Image();
+            img.crossOrigin = "Anonymous"; // 보안 오류 방지
             img.src = "form_0" + currentFormIdx + ".png";
             
             img.onload = function() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                 ctx.font = "bold 22px 'Malgun Gothic'";
-                ctx.fillStyle = "#111111"; // 명확하게 찍히는 검정색 글씨
+                ctx.fillStyle = "#111111"; // 검정 텍스트
 
-                // 선택된 서식지 페이지별 좌표 자동 적용
-                if (currentFormIdx === 1) { // 1번: KT 서비스신청서
-                    ctx.fillText(seller, 800, 140);   // 판매자명
-                    ctx.fillText(name, 800, 168);     // 신청가입자 본인명
-                    ctx.fillText(name, 800, 202);     // 신청가입자 명의
-                    ctx.fillText(name, 280, 365);     // 고객명
-                    ctx.fillText(birth, 650, 365);    // 생년월일
-                    ctx.fillText(addr, 280, 412);     // 주소
-                    ctx.fillText(name, 510, 508);     // 예금주명
-                    ctx.fillText(birth, 800, 508);    // 예금주 생년월일
-                    ctx.fillText(bank + " / " + bankNum, 510, 532); // 은행 및 계좌
-                    ctx.fillText(name, 800, 588);     // 납부 동의 성명
-                    ctx.fillText(dateStr, 200, 882);  // 신청일
-                    ctx.fillText(seller, 200, 902);   // 판매자
-                    ctx.fillText(name, 730, 895);     // 하단 신청자 성명
+                // 텍스트 매핑 좌표
+                if (currentFormIdx === 1) {
+                    ctx.fillText(seller, 800, 140);
+                    ctx.fillText(name, 800, 168);
+                    ctx.fillText(name, 800, 202);
+                    ctx.fillText(name, 280, 365);
+                    ctx.fillText(birth, 650, 365);
+                    ctx.fillText(addr, 280, 412);
+                    ctx.fillText(name, 510, 508);
+                    ctx.fillText(birth, 800, 508);
+                    ctx.fillText(bank + " / " + bankNum, 510, 532);
+                    ctx.fillText(name, 800, 588);
+                    ctx.fillText(dateStr, 200, 882);
+                    ctx.fillText(seller, 200, 902);
+                    ctx.fillText(name, 730, 895);
                 } 
-                else if (currentFormIdx === 2) { // 2번: KT 무선신청서
-                    ctx.fillText(name, 770, 335);     // 고객/대리인 명
-                    ctx.fillText(name, 770, 905);     // 하단 가입자명
-                    ctx.fillText(dateStr, 200, 905);  // 신청일자
+                else if (currentFormIdx === 2) {
+                    ctx.fillText(name, 770, 335);
+                    ctx.fillText(name, 770, 905);
+                    ctx.fillText(dateStr, 200, 905);
                 } 
-                else if (currentFormIdx === 3) { // 3번: 개인정보 활용 동의서 (1)
+                else if (currentFormIdx === 3) {
                     ctx.fillText(name, 800, 160);
                     ctx.fillText(name, 800, 252);
                     ctx.fillText(name, 800, 505);
                 } 
-                else if (currentFormIdx === 4) { // 4번: 개인정보 활용 동의서 (2)
+                else if (currentFormIdx === 4) {
                     ctx.fillText(name, 800, 130);
                     ctx.fillText(name, 800, 380);
                     ctx.fillText(name, 800, 890);
                 }
             };
+
+            // 만약 form_0X.png 로딩에 실패한 경우
+            img.onerror = function() {
+                ctx.fillStyle = "#FF0000";
+                ctx.font = "bold 24px 'Malgun Gothic'";
+                ctx.fillText("⚠️ 'form_0" + currentFormIdx + ".png' 원본 이미지를 찾을 수 없습니다.", 50, 100);
+                ctx.fillStyle = "#333333";
+                ctx.font = "18px 'Malgun Gothic'";
+                ctx.fillText("GitHub 저장소에 [form_01.png ~ form_04.png] 파일이 업로드되었는지 확인해주세요.", 50, 140);
+            };
         }
 
-        // 작성된 4장의 서식지를 순차적으로 JPG 파일로 내려받기
+        // JPG 일괄 다운로드
         function downloadAllJPGs() {
             var canvas = document.getElementById("formCanvas");
             var name = document.getElementById("custName").value || "고객";
             
             alert(name + "님의 서식지 4장이 순차적으로 JPG 파일로 다운로드됩니다.");
 
-            var savedIdx = currentFormIdx; // 현재 선택 기억
-            
+            var savedIdx = currentFormIdx;
             var formList = [1, 2, 3, 4];
             var delay = 0;
 
@@ -378,11 +378,11 @@
                         link.click();
 
                         if (idx === 4) {
-                            selectForm(savedIdx); // 원상복구
+                            selectForm(savedIdx);
                         }
-                    }, 200);
+                    }, 300);
                 }, delay);
-                delay += 800; // 브라우저 다운로드 팝업 차단 방지용 간격
+                delay += 800;
             });
         }
     </script>
