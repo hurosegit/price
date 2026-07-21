@@ -22,14 +22,27 @@
         /* [단가표 화면] 스타일 (세로 나열) */
         #price-view { display: none; text-align: center; padding: 30px 15px; width: 100%; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
         
-        /* ✨ [사장님 요청] 페이지 상단 예쁜 타이틀 바 스타일 */
-        .page-header { background: #fff; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 25px; border-left: 5px solid #007bff; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+        /* 페이지 상단 예쁜 타이틀 바 스타일 */
+        .page-header { background: #fff; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px; margin-top: 25px; border-left: 5px solid #007bff; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+        .page-header:first-child { margin-top: 0; }
         .page-header h1 { margin: 0; font-size: 20px; color: #333; }
         .page-header .status { font-size: 14px; color: #28a745; font-weight: bold; background: #e8f5e9; padding: 5px 10px; border-radius: 20px; }
 
-        /* 이미지 스타일 */
-        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 25px; /* 이미지 간 간격 */ display: block; margin-left: auto; margin-right: auto; }
+        /* 이미지 스타일 (클릭 가능하도록 돋보기 커서 적용) */
+        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; cursor: zoom-in; transition: transform 0.2s; }
+        #price-view img:hover { transform: scale(1.01); }
         
+        /* ✨ [이미지 확대 팝업] 클릭 시 화면 가득 뜨는 화면 */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        .modal-content { margin: auto; display: block; max-width: 95%; max-height: 95vh; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); animation: zoom 0.2s; margin-top: 2vh; }
+        .close-btn { position: fixed; top: 15px; right: 25px; color: #fff; font-size: 35px; font-weight: bold; cursor: pointer; z-index: 10000; text-shadow: 0 0 10px #000; }
+        .modal-hint { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 20px; pointer-events: none; }
+
+        @keyframes zoom {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
         /* 모바일 대응 */
         @media (max-width: 600px) {
             .login-box { padding: 40px 20px; width: 90%; box-sizing: border-box; }
@@ -54,40 +67,49 @@
     <!-- [2] 비밀번호 성공 시 단가표 화면 -->
     <div id="price-view">
         
-        <!-- ✨ [사장님 요청] 페이지 상단 예쁜 타이틀 바 -->
         <div class="page-header">
             <h1>KT MNO 외국인전용 정책표</h1>
-            <span class="status">● 보안접속완료</span>
+            <span class="status">🔍 클릭시 확대</span>
         </div>
+        <img src="price_01.png" alt="에셀트리 단가표 1" onclick="openModal(this)">
 
-        <!-- 💡 올리신 이미지 파일명과 개수에 맞춰서 아래 <img> 태그를 수정하세요! -->
-        <img src="price_01.png" alt="에셀트리 단가표 1">
         <div class="page-header">
             <h1>LG MNO 외국인전용 정책표</h1>
-            <span class="status">● 보안접속완료</span>
+            <span class="status">🔍 클릭시 확대</span>
         </div>
-        <img src="price_02.png" alt="에셀트리 단가표 2">
+        <img src="price_02.png" alt="에셀트리 단가표 2" onclick="openModal(this)">
+
         <div class="page-header">
             <h1>알뜰모바일 대기업 자회사</h1>
-            <span class="status">● 보안접속완료</span>
+            <span class="status">🔍 클릭시 확대</span>
         </div>
-        <img src="price_03.png" alt="에셀트리 단가표 3">
+        <img src="price_03.png" alt="에셀트리 단가표 3" onclick="openModal(this)">
+
         <div class="page-header">
             <h1>알뜰모바일 중소기업</h1>
-            <span class="status">● 보안접속완료</span>
+            <span class="status">🔍 클릭시 확대</span>
         </div>
-        <img src="price_04.png" alt="에셀트리 단가표 4">
+        <img src="price_04.png" alt="에셀트리 단가표 4" onclick="openModal(this)">
+
         <div class="page-header">
             <h1>KT M모바일 A175 단말기</h1>
-            <span class="status">● 보안접속완료</span>
+            <span class="status">🔍 클릭시 확대</span>
         </div>
-        <img src="price_05.png" alt="에셀트리 단가표 5">
+        <img src="price_05.png" alt="에셀트리 단가표 5" onclick="openModal(this)">
+
         <div class="page-header">
             <h1>선불</h1>
-            <span class="status">● 보안접속완료</span>
+            <span class="status">🔍 클릭시 확대</span>
         </div>
-        <img src="price_06.png" alt="에셀트리 단가표 6">
-        <!-- 이미지가 더 있다면 여기에 <img> 태그를 계속 추가하세요 -->
+        <img src="price_06.png" alt="에셀트리 단가표 6" onclick="openModal(this)">
+
+    </div>
+
+    <!-- ✨ [3] 이미지 크게 보기 팝업 창 -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImg">
+        <div class="modal-hint">화면을 닫으려면 아무 데나 터치(클릭)하세요</div>
     </div>
 
     <script>
@@ -95,7 +117,7 @@
             var input = document.getElementById('pw').value;
             
             // 💡 사장님의 비밀번호 4자리로 수정하세요!
-            var realPassword = "7700"; 
+            var realPassword = "7000"; 
 
             if(input === realPassword) {
                 // 성공: 로그인 창 숨기고 이미지 창 보이기
@@ -104,10 +126,23 @@
                 // 스크롤을 맨 위로 이동
                 window.scrollTo(0, 0);
             } else {
-                alert("비밀번호가 올바르지 않습니다. 대리점으로 문의하세요.");
+                alert("비밀번호가 올바르지 않습니다. 이상진과장 010-5707-7000으로 문의하세요.");
                 document.getElementById('pw').value = ""; // 입력창 비우기
                 document.getElementById('pw').focus(); // 입력창에 다시 포커스
             }
+        }
+
+        // 🔍 이미지 확대 팝업 열기
+        function openModal(imgElement) {
+            var modal = document.getElementById("imageModal");
+            var modalImg = document.getElementById("modalImg");
+            modal.style.display = "block";
+            modalImg.src = imgElement.src;
+        }
+
+        // 닫기
+        function closeModal() {
+            document.getElementById("imageModal").style.display = "none";
         }
     </script>
 </body>
