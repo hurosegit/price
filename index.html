@@ -356,23 +356,23 @@ function renderCanvas() {
 
             // --- 2. 통신범죄 예방안내 우측 서명란 ---
             ctx.font = "bold 20px 'Malgun Gothic'";
-            ctx.fillText(seller, 970, 162); // 판매자(본인)
-            ctx.fillText(name, 770, 215);   // 신청/가입자(본인) 1
-            ctx.fillText(name, 770, 270);   // 신청/가입자(본인) 2
+            ctx.fillText(seller, 880, 167); // 판매자(본인)
+            ctx.fillText(name, 880, 220);   // 신청/가입자(본인) 1
+            ctx.fillText(name, 880, 275);   // 신청/가입자(본인) 2
 
             // --- 3. 결합서비스신청 하단 대리인 서명 ---
-            ctx.fillText(name, 770, 715);   // 신청/가입자(대리인)
+            ctx.fillText(name, 880, 735);   // 신청/가입자(대리인)
 
             // --- 4. 고객정보 섹션 ---
-            ctx.fillText(name, 280, 775);   // 고객명
-            ctx.fillText(birth, 520, 775);  // 생년월일
+            ctx.fillText(name, 280, 790);   // 고객명
+            ctx.fillText(birth, 540, 775);  // 생년월일
 
             // 성별 체크 (3번: 남 / 4번: 여)
             ctx.font = "bold 18px 'Malgun Gothic'";
             if (selectedGender === "M") {
-                ctx.fillText("✔", 702, 770); // 3번 박스 (남)
+                ctx.fillText("✔", 732, 770); // 3번 박스 (남)
             } else {
-                ctx.fillText("✔", 735, 770); // 4번 박스 (여)
+                ctx.fillText("✔", 755, 770); // 4번 박스 (여)
             }
             ctx.font = "bold 20px 'Malgun Gothic'";
 
