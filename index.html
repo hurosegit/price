@@ -58,7 +58,7 @@
         <div class="login-box">
             <h2>🔒 에셀트리 보안 정책실</h2>
             <p>인증 비밀번호 4자리를 입력하세요.</p>
-            <input type="password" id="pw" placeholder="비밀번호 입력">
+            <input type="password" id="pw" placeholder="비밀번호 입력" onkeyup="handleKeyUp(event)">
             <button onclick="checkPw()">확인</button>
             <p class="hint">문의: 이상진 과장 010-5707-7000</p>
         </div>
