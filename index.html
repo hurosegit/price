@@ -310,119 +310,116 @@
         }
 
         // Canvas 실시간 도면화
-        function renderCanvas() {
-            var canvas = document.getElementById("formCanvas");
-            var ctx = canvas.getContext("2d");
+function renderCanvas() {
+    var canvas = document.getElementById("formCanvas");
+    var ctx = canvas.getContext("2d");
 
-            ctx.fillStyle = "#FFFFFF";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 입력값 취득
-            var name = document.getElementById("custName").value || "홍길동";
-            var birth = document.getElementById("custBirth").value || "011129";
-            var addr = document.getElementById("custAddr").value || "서울시 중구 장충단로...";
-            var bank = document.getElementById("bankName").value || "하나은행";
-            var bankNum = document.getElementById("bankNum").value || "123-456-7890";
-            var seller = document.getElementById("sellerName").value || "사가르";
-            var dateStr = document.getElementById("applyDate").value;
-            
-            // 성별 라디오 선택값 확인 ('M' 또는 'F')
-            var genderRadios = document.getElementsByName("gender");
-            var selectedGender = "M";
-            for(var i=0; i<genderRadios.length; i++) {
-                if(genderRadios[i].checked) {
-                    selectedGender = genderRadios[i].value;
-                    break;
-                }
-            }
-
-            var img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = "form_0" + currentFormIdx + ".jpg";
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                ctx.font = "bold 20px 'Malgun Gothic'";
-                ctx.fillStyle = "#111111";
-
-                // 📌 1번 서식지 (KT 서비스신청서) 정밀 도면 위치 반영
-                if (currentFormIdx === 1) {
-                    
-                    // --- 1. 무조건 체크표시 박스 (1번, 2번) ---
-                    ctx.font = "bold 18px 'Malgun Gothic'";
-                    ctx.fillText("✔", 632, 57);   // 1번 박스: MOBILE 신규
-                    ctx.fillText("✔", 856, 68);   // 2번 박스: 대리인(점주)
-
-                    // --- 2. 우측 통신범죄 예방안내 서명란 ---
-                    ctx.font = "bold 20px 'Malgun Gothic'";
-                    ctx.fillText(seller, 790, 102); // 판매자 이름
-                    ctx.fillText(name, 790, 134);   // 고객성명
-                    ctx.fillText(name, 790, 168);   // 고객성명
-
-                    // --- 3. 결합서비스신청 하단 대리인 서명 ---
-                    ctx.fillText(name, 790, 448);   // 고객성명
-
-                    // --- 4. 고객정보 섹션 ---
-                    ctx.fillText(name, 280, 485);   // 고객성명
-                    ctx.fillText(birth, 550, 485);  // 생년월일
-
-                    // 성별 체크 (3번: 남성 / 4번: 여성)
-                    ctx.font = "bold 18px 'Malgun Gothic'";
-                    if (selectedGender === "M") {
-                        ctx.fillText("✔", 702, 483); // 3번 박스 (남)
-                    } else {
-                        ctx.fillText("✔", 735, 483); // 4번 박스 (여)
-                    }
-                    ctx.font = "bold 20px 'Malgun Gothic'";
-
-                    ctx.fillText(addr, 280, 522);   // 주소
-
-                    // --- 5. 무조건 체크표시 박스 (5번: 복지할인 해당없음) ---
-                    ctx.font = "bold 18px 'Malgun Gothic'";
-                    ctx.fillText("✔", 414, 604); // 5번 박스 (해당없음)
-                    ctx.font = "bold 20px 'Malgun Gothic'";
-
-                    // --- 6. 요금납부 섹션 ---
-                    ctx.fillText(name, 510, 650);                  // 예금주 고객성명
-                    ctx.fillText(birth, 800, 650);                 // 생년월일
-                    ctx.fillText(bank + " / " + bankNum, 510, 676); // 은행명 / 계좌번호
-                    ctx.fillText(name, 800, 742);                  // 자동납부 동의 고객성명
-
-                    // --- 7. 최하단 날짜 / 판매자 / 고객 서명 ---
-                    // 오늘날짜
-                    ctx.fillText(dateStr, 120, 920);
-                    // 판매자 이름
-                    ctx.fillText(seller, 120, 938);
-                    // 신청/가입자 서명
-                    ctx.fillText(name, 740, 930);
-                } 
-                else if (currentFormIdx === 2) {
-                    ctx.fillText(name, 770, 335);
-                    ctx.fillText(name, 770, 905);
-                    ctx.fillText(dateStr, 200, 905);
-                } 
-                else if (currentFormIdx === 3) {
-                    ctx.fillText(name, 800, 160);
-                    ctx.fillText(name, 800, 252);
-                    ctx.fillText(name, 800, 505);
-                } 
-                else if (currentFormIdx === 4) {
-                    ctx.fillText(name, 800, 130);
-                    ctx.fillText(name, 800, 380);
-                    ctx.fillText(name, 800, 890);
-                }
-            };
-
-            img.onerror = function() {
-                var retryImg = new Image();
-                retryImg.crossOrigin = "Anonymous";
-                retryImg.src = currentFormIdx + ".jpg";
-                retryImg.onload = function() {
-                    ctx.drawImage(retryImg, 0, 0, canvas.width, canvas.height);
-                };
-            };
+    // 입력값 취득
+    var name = document.getElementById("custName").value || "홍길동";
+    var birth = document.getElementById("custBirth").value || "011129";
+    var addr = document.getElementById("custAddr").value || "서울시 중구 장충단로...";
+    var bank = document.getElementById("bankName").value || "하나은행";
+    var bankNum = document.getElementById("bankNum").value || "123-456-7890";
+    var seller = document.getElementById("sellerName").value || "사가르";
+    var dateStr = document.getElementById("applyDate").value;
+    
+    // 성별 라디오 선택값 확인
+    var genderRadios = document.getElementsByName("gender");
+    var selectedGender = "M";
+    for(var i=0; i<genderRadios.length; i++) {
+        if(genderRadios[i].checked) {
+            selectedGender = genderRadios[i].value;
+            break;
         }
+    }
+
+    var img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = "form_0" + currentFormIdx + ".jpg";
+    
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        ctx.font = "bold 20px 'Malgun Gothic'";
+        ctx.fillStyle = "#111111";
+
+        // 📌 1번 서식지 (KT 서비스신청서) 정밀 좌표 교정
+        if (currentFormIdx === 1) {
+            
+            // --- 1. 최상단 무조건 체크표시 박스 (1번, 2번) ---
+            ctx.font = "bold 16px 'Malgun Gothic'";
+            ctx.fillText("✔", 635, 52);   // 1번 박스: MOBILE 신규
+            ctx.fillText("✔", 855, 68);   // 2번 박스: 고객구분 대리인
+
+            // --- 2. 통신범죄 예방안내 우측 서명란 ---
+            ctx.font = "bold 20px 'Malgun Gothic'";
+            ctx.fillText(seller, 790, 102); // 판매자(본인)
+            ctx.fillText(name, 790, 134);   // 신청/가입자(본인) 1
+            ctx.fillText(name, 790, 168);   // 신청/가입자(본인) 2
+
+            // --- 3. 결합서비스신청 하단 대리인 서명 ---
+            ctx.fillText(name, 790, 448);   // 신청/가입자(대리인)
+
+            // --- 4. 고객정보 섹션 ---
+            ctx.fillText(name, 280, 485);   // 고객명
+            ctx.fillText(birth, 550, 485);  // 생년월일
+
+            // 성별 체크 (3번: 남 / 4번: 여)
+            ctx.font = "bold 16px 'Malgun Gothic'";
+            if (selectedGender === "M") {
+                ctx.fillText("✔", 702, 482); // 3번 박스 (남)
+            } else {
+                ctx.fillText("✔", 735, 482); // 4번 박스 (여)
+            }
+            ctx.font = "bold 20px 'Malgun Gothic'";
+
+            ctx.fillText(addr, 280, 522);   // 주소(설치)
+
+            // --- 5. 복지할인 (5번: 해당없음) ---
+            ctx.font = "bold 16px 'Malgun Gothic'";
+            ctx.fillText("✔", 414, 604); // 5번 박스 (해당없음)
+            ctx.font = "bold 20px 'Malgun Gothic'";
+
+            // --- 6. 요금납부 섹션 ---
+            ctx.fillText(name, 510, 650);                  // 예금주/카드주
+            ctx.fillText(birth, 800, 650);                 // 생년월일
+            ctx.fillText(bank + " / " + bankNum, 510, 676); // 은행명 / 계좌번호
+            ctx.fillText(name, 800, 742);                  // 자동/통합 납부 동의 서명
+
+            // --- 7. 최하단 날짜 / 판매자 / 고객 서명 ---
+            ctx.fillText(dateStr, 120, 920); // 오늘날짜
+            ctx.fillText(seller, 120, 938);  // 판매자 이름
+            ctx.fillText(name, 740, 930);    // 신청/가입자 서명
+        } 
+        else if (currentFormIdx === 2) {
+            ctx.fillText(name, 770, 335);
+            ctx.fillText(name, 770, 905);
+            ctx.fillText(dateStr, 200, 905);
+        } 
+        else if (currentFormIdx === 3) {
+            ctx.fillText(name, 800, 160);
+            ctx.fillText(name, 800, 252);
+            ctx.fillText(name, 800, 505);
+        } 
+        else if (currentFormIdx === 4) {
+            ctx.fillText(name, 800, 130);
+            ctx.fillText(name, 800, 380);
+            ctx.fillText(name, 800, 890);
+        }
+    };
+
+    img.onerror = function() {
+        var retryImg = new Image();
+        retryImg.crossOrigin = "Anonymous";
+        retryImg.src = currentFormIdx + ".jpg";
+        retryImg.onload = function() {
+            ctx.drawImage(retryImg, 0, 0, canvas.width, canvas.height);
+        };
+    };
+}
 
         // JPG 일괄 다운로드
         function downloadAllJPGs() {
