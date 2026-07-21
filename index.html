@@ -326,7 +326,7 @@ function renderCanvas() {
     var seller = document.getElementById("sellerName").value || "사가르";
     var dateStr = document.getElementById("applyDate").value;
     
-    // 성별 라디오 선택값 확인
+    // 성별 라디오 선택값 확인 ('M' 또는 'F')
     var genderRadios = document.getElementsByName("gender");
     var selectedGender = "M";
     for(var i=0; i<genderRadios.length; i++) {
@@ -350,49 +350,49 @@ function renderCanvas() {
         if (currentFormIdx === 1) {
             
             // --- 1. 최상단 무조건 체크표시 박스 (1번, 2번) ---
-            ctx.font = "bold 16px 'Malgun Gothic'";
-            ctx.fillText("✔", 635, 52);   // 1번 박스: MOBILE 신규
-            ctx.fillText("✔", 855, 68);   // 2번 박스: 고객구분 대리인
+            ctx.font = "bold 18px 'Malgun Gothic'";
+            ctx.fillText("✔", 632, 85);   // 1번 박스: MOBILE 신규
+            ctx.fillText("✔", 856, 110);  // 2번 박스: 고객구분 대리인
 
             // --- 2. 통신범죄 예방안내 우측 서명란 ---
             ctx.font = "bold 20px 'Malgun Gothic'";
-            ctx.fillText(seller, 790, 102); // 판매자(본인)
-            ctx.fillText(name, 790, 134);   // 신청/가입자(본인) 1
-            ctx.fillText(name, 790, 168);   // 신청/가입자(본인) 2
+            ctx.fillText(seller, 770, 162); // 판매자(본인)
+            ctx.fillText(name, 770, 215);   // 신청/가입자(본인) 1
+            ctx.fillText(name, 770, 270);   // 신청/가입자(본인) 2
 
             // --- 3. 결합서비스신청 하단 대리인 서명 ---
-            ctx.fillText(name, 790, 448);   // 신청/가입자(대리인)
+            ctx.fillText(name, 770, 715);   // 신청/가입자(대리인)
 
             // --- 4. 고객정보 섹션 ---
-            ctx.fillText(name, 280, 485);   // 고객명
-            ctx.fillText(birth, 550, 485);  // 생년월일
+            ctx.fillText(name, 280, 775);   // 고객명
+            ctx.fillText(birth, 520, 775);  // 생년월일
 
             // 성별 체크 (3번: 남 / 4번: 여)
-            ctx.font = "bold 16px 'Malgun Gothic'";
+            ctx.font = "bold 18px 'Malgun Gothic'";
             if (selectedGender === "M") {
-                ctx.fillText("✔", 702, 482); // 3번 박스 (남)
+                ctx.fillText("✔", 702, 770); // 3번 박스 (남)
             } else {
-                ctx.fillText("✔", 735, 482); // 4번 박스 (여)
+                ctx.fillText("✔", 735, 770); // 4번 박스 (여)
             }
             ctx.font = "bold 20px 'Malgun Gothic'";
 
-            ctx.fillText(addr, 280, 522);   // 주소(설치)
+            ctx.fillText(addr, 280, 835);   // 주소(설치)
 
             // --- 5. 복지할인 (5번: 해당없음) ---
-            ctx.font = "bold 16px 'Malgun Gothic'";
-            ctx.fillText("✔", 414, 604); // 5번 박스 (해당없음)
+            ctx.font = "bold 18px 'Malgun Gothic'";
+            ctx.fillText("✔", 414, 968);   // 5번 박스 (해당없음)
             ctx.font = "bold 20px 'Malgun Gothic'";
 
             // --- 6. 요금납부 섹션 ---
-            ctx.fillText(name, 510, 650);                  // 예금주/카드주
-            ctx.fillText(birth, 800, 650);                 // 생년월일
-            ctx.fillText(bank + " / " + bankNum, 510, 676); // 은행명 / 계좌번호
-            ctx.fillText(name, 800, 742);                  // 자동/통합 납부 동의 서명
+            ctx.fillText(name, 510, 1040);                  // 예금주/카드주
+            ctx.fillText(birth, 800, 1040);                 // 생년월일
+            ctx.fillText(bank + " / " + bankNum, 510, 1080); // 은행명 / 계좌번호
+            ctx.fillText(name, 800, 1185);                  // 자동/통합 납부 동의 서명
 
             // --- 7. 최하단 날짜 / 판매자 / 고객 서명 ---
-            ctx.fillText(dateStr, 120, 920); // 오늘날짜
-            ctx.fillText(seller, 120, 938);  // 판매자 이름
-            ctx.fillText(name, 740, 930);    // 신청/가입자 서명
+            ctx.fillText(dateStr, 120, 1475); // 오늘날짜
+            ctx.fillText(seller, 120, 1500);  // 판매자 이름
+            ctx.fillText(name, 740, 1530);    // 신청/가입자 서명
         } 
         else if (currentFormIdx === 2) {
             ctx.fillText(name, 770, 335);
