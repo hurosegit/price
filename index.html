@@ -55,8 +55,13 @@
         .form-group { margin-bottom: 12px; }
         .form-group.full { grid-column: span 2; }
         .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .form-group input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         
+        /* 성별 라디오 버튼 스타일 */
+        .gender-options { display: flex; gap: 20px; padding-top: 8px; }
+        .gender-options label { font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .gender-options input { width: 16px; height: 16px; cursor: pointer; }
+
         .btn-submit { background: #007bff; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
         .btn-submit:hover { background: #0056b3; }
 
@@ -76,7 +81,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="initTodayDate()">
 
     <!-- [1] 로그인 화면 -->
     <div id="login-view">
@@ -182,6 +187,13 @@
                             <input type="text" id="custName" placeholder="홍길동" oninput="renderCanvas()">
                         </div>
                         <div class="form-group">
+                            <label>성별 선택</label>
+                            <div class="gender-options">
+                                <label><input type="radio" name="gender" value="M" checked onchange="renderCanvas()"> 남성 (3번 체크)</label>
+                                <label><input type="radio" name="gender" value="F" onchange="renderCanvas()"> 여성 (4번 체크)</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label>생년월일 / 외국인등록번호 앞자리</label>
                             <input type="text" id="custBirth" placeholder="011129" oninput="renderCanvas()">
                         </div>
@@ -202,8 +214,8 @@
                             <input type="text" id="sellerName" placeholder="사가르" oninput="renderCanvas()">
                         </div>
                         <div class="form-group">
-                            <label>신청일자</label>
-                            <input type="text" id="applyDate" placeholder="2026.03.18" oninput="renderCanvas()">
+                            <label>신청일자 (기본 오늘날짜)</label>
+                            <input type="text" id="applyDate" placeholder="YYYY.MM.DD" oninput="renderCanvas()">
                         </div>
                     </div>
 
@@ -227,6 +239,20 @@
 
     <script>
         var currentFormIdx = 1;
+
+        // 오늘 날짜 세팅
+        function initTodayDate() {
+            var today = new Date();
+            var yyyy = today.getFullYear();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            var formattedToday = yyyy + "." + mm + "." + dd;
+            
+            var dateInput = document.getElementById("applyDate");
+            if(dateInput && !dateInput.value) {
+                dateInput.value = formattedToday;
+            }
+        }
 
         // 비밀번호 체크
         function checkPw() {
@@ -252,6 +278,7 @@
             document.getElementById('price-view').style.display = 'none';
             document.getElementById('apply-view').style.display = 'block';
             window.scrollTo(0, 0);
+            initTodayDate();
             selectForm(1);
         }
 
@@ -287,18 +314,27 @@
             var canvas = document.getElementById("formCanvas");
             var ctx = canvas.getContext("2d");
 
-            // 기본 배경을 흰색으로 지정
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 입력값
+            // 입력값 취득
             var name = document.getElementById("custName").value || "홍길동";
             var birth = document.getElementById("custBirth").value || "011129";
             var addr = document.getElementById("custAddr").value || "서울시 중구 장충단로...";
             var bank = document.getElementById("bankName").value || "하나은행";
             var bankNum = document.getElementById("bankNum").value || "123-456-7890";
             var seller = document.getElementById("sellerName").value || "사가르";
-            var dateStr = document.getElementById("applyDate").value || "2026. 03. 18";
+            var dateStr = document.getElementById("applyDate").value;
+            
+            // 성별 라디오 선택값 확인 ('M' 또는 'F')
+            var genderRadios = document.getElementsByName("gender");
+            var selectedGender = "M";
+            for(var i=0; i<genderRadios.length; i++) {
+                if(genderRadios[i].checked) {
+                    selectedGender = genderRadios[i].value;
+                    break;
+                }
+            }
 
             var img = new Image();
             img.crossOrigin = "Anonymous";
@@ -308,44 +344,58 @@
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                 ctx.font = "bold 20px 'Malgun Gothic'";
-                ctx.fillStyle = "#111111"; // 손글씨 느낌의 짙은 색상
+                ctx.fillStyle = "#111111";
 
-                // 📌 1번 서식지 (KT 서비스신청서) 정밀 교정 좌표
+                // 📌 1번 서식지 (KT 서비스신청서) 정밀 도면 위치 반영
                 if (currentFormIdx === 1) {
-                    // 1. 통신범죄 예방안내 상단 우측 - 판매자(본인)
-                    ctx.fillText(seller, 790, 102);
+                    
+                    // --- 1. 무조건 체크표시 박스 (1번, 2번) ---
+                    ctx.font = "bold 18px 'Malgun Gothic'";
+                    ctx.fillText("✔", 632, 57);   // 1번 박스: MOBILE 신규
+                    ctx.fillText("✔", 856, 68);   // 2번 박스: 대리인(점주)
 
-                    // 2. 통신범죄 예방안내 - 신청/가입자(본인) 서명란 2곳
-                    ctx.fillText(name, 790, 134);
-                    ctx.fillText(name, 790, 168);
+                    // --- 2. 우측 통신범죄 예방안내 서명란 ---
+                    ctx.font = "bold 20px 'Malgun Gothic'";
+                    ctx.fillText(seller, 790, 102); // 판매자 이름
+                    ctx.fillText(name, 790, 134);   // 고객성명
+                    ctx.fillText(name, 790, 168);   // 고객성명
 
-                    // 3. 결합서비스신청 하단 - 신청/가입자(대리인)
-                    ctx.fillText(name, 790, 448);
+                    // --- 3. 결합서비스신청 하단 대리인 서명 ---
+                    ctx.fillText(name, 790, 448);   // 고객성명
 
-                    // 4. 고객정보 섹션
-                    ctx.fillText(name, 280, 485);      // 고객명
-                    ctx.fillText(birth, 550, 485);     // 생년월일
-                    ctx.fillText(addr, 280, 522);      // 주소
+                    // --- 4. 고객정보 섹션 ---
+                    ctx.fillText(name, 280, 485);   // 고객성명
+                    ctx.fillText(birth, 550, 485);  // 생년월일
 
-                    // 5. 요금납부 섹션
-                    ctx.fillText(name, 510, 650);      // 예금주/카드주
-                    ctx.fillText(birth, 800, 650);     // 예금주 생년월일
-                    ctx.fillText(bank + " / " + bankNum, 510, 676); // 은행 및 계좌번호
-                    ctx.fillText(name, 800, 742);      // 자동/통합 납부 동의 서명
-
-                    // 6. 최하단 날짜 / 판매자 / 고객 서명
-                    // 신청일자 (YYYY . MM . DD 형태로 분할 렌더링)
-                    var dateParts = dateStr.replace(/[^0-9]/g, '');
-                    if(dateParts.length >= 8) {
-                        ctx.fillText(dateParts.substring(0, 4), 180, 1475); // 년
-                        ctx.fillText(dateParts.substring(4, 6), 265, 1475); // 월
-                        ctx.fillText(dateParts.substring(6, 8), 320, 1475); // 일
+                    // 성별 체크 (3번: 남성 / 4번: 여성)
+                    ctx.font = "bold 18px 'Malgun Gothic'";
+                    if (selectedGender === "M") {
+                        ctx.fillText("✔", 702, 483); // 3번 박스 (남)
                     } else {
-                        ctx.fillText(dateStr, 180, 1475);
+                        ctx.fillText("✔", 735, 483); // 4번 박스 (여)
                     }
+                    ctx.font = "bold 20px 'Malgun Gothic'";
 
-                    ctx.fillText(seller, 140, 1495);   // 판매자 이름
-                    ctx.fillText(name, 740, 1533);     // 신청/가입자(본인) 서명
+                    ctx.fillText(addr, 280, 522);   // 주소
+
+                    // --- 5. 무조건 체크표시 박스 (5번: 복지할인 해당없음) ---
+                    ctx.font = "bold 18px 'Malgun Gothic'";
+                    ctx.fillText("✔", 414, 604); // 5번 박스 (해당없음)
+                    ctx.font = "bold 20px 'Malgun Gothic'";
+
+                    // --- 6. 요금납부 섹션 ---
+                    ctx.fillText(name, 510, 650);                  // 예금주 고객성명
+                    ctx.fillText(birth, 800, 650);                 // 생년월일
+                    ctx.fillText(bank + " / " + bankNum, 510, 676); // 은행명 / 계좌번호
+                    ctx.fillText(name, 800, 742);                  // 자동납부 동의 고객성명
+
+                    // --- 7. 최하단 날짜 / 판매자 / 고객 서명 ---
+                    // 오늘날짜
+                    ctx.fillText(dateStr, 120, 920);
+                    // 판매자 이름
+                    ctx.fillText(seller, 120, 938);
+                    // 신청/가입자 서명
+                    ctx.fillText(name, 740, 930);
                 } 
                 else if (currentFormIdx === 2) {
                     ctx.fillText(name, 770, 335);
