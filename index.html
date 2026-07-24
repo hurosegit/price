@@ -239,6 +239,7 @@
 
     <script>
         var currentFormIdx = 1;
+        let debugMode = true;
 
         // 오늘 날짜 세팅
         function initTodayDate() {
@@ -420,6 +421,23 @@ function renderCanvas() {
         };
     };
 }
+        const canvas = document.getElementById("formCanvas");
+
+canvas.addEventListener("click", function(e){
+
+    if(!debugMode) return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const x = Math.round((e.clientX - rect.left) * scaleX);
+    const y = Math.round((e.clientY - rect.top) * scaleY);
+
+    alert("X=" + x + "\nY=" + y);
+
+});
 
         // JPG 일괄 다운로드
         function downloadAllJPGs() {
