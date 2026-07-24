@@ -72,8 +72,8 @@
         .modal-content { margin: 40px auto; display: block; width: 95%; max-width: 1100px; height: auto; border-radius: 6px; }
         .close-btn { position: fixed; top: 15px; right: 20px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 100000; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.5); width: 45px; height: 45px; line-height: 40px; text-align: center; border-radius: 50%; }
 
-        /* [5] 🎛️ 좌표 조정 스튜디오 패널 */
-        #coord-studio { position: fixed; right: 20px; bottom: 20px; width: 280px; background: #222; color: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); font-size: 13px; z-index: 90000; }
+        /* [5] 🎛️ 좌표 조정 스튜디오 패널 (기본 숨김 처리) */
+        #coord-studio { display: none; position: fixed; right: 20px; bottom: 20px; width: 280px; background: #222; color: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); font-size: 13px; z-index: 90000; }
         #coord-studio h4 { margin: 0 0 10px 0; color: #007bff; display: flex; justify-content: space-between; align-items: center; }
         .studio-row { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .studio-row select { width: 100%; padding: 6px; border-radius: 4px; background: #333; color: #fff; border: 1px solid #555; }
@@ -246,7 +246,7 @@
         <img class="modal-content" id="modalImg">
     </div>
 
-    <!-- [5] 🎛️ 좌표 조정 스튜디오 패널 -->
+    <!-- [5] 🎛️ 좌표 조정 스튜디오 패널 (개발자 로그인 시에만 표시됨) -->
     <div id="coord-studio">
         <h4>🎯 좌표 미세조정 툴 <label style="font-size:11px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="debugToggle" onchange="renderCanvas()"> 🐞 디버그</label></h4>
         <div class="studio-row">
@@ -265,27 +265,30 @@
     </div>
 
     <script>
+        // 개발자 모드 상태 변수 (기본 false)
+        var isDevMode = false;
+
         // =========================================================================
-        // 📐 [1] 서식지별 중앙 좌표 설정 객체 (제시된 표 이미지 좌표 100% 반영)
+        // 📐 서식지별 중앙 좌표 설정 객체
         // =========================================================================
         const FORM_CONFIG = {
             FORM1: {
-                checkMobileNew:  { x: 751,  y: 99,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                checkAgent:      { x: 1045, y: 95,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                sellerSign1:     { x: 904,  y: 160,  font: "bold 20px 'Malgun Gothic'" },
-                custSign1:       { x: 904,  y: 210,  font: "bold 20px 'Malgun Gothic'" },
-                custSign2:       { x: 904,  y: 269,  font: "bold 20px 'Malgun Gothic'" },
-                custSignCombine: { x: 950,  y: 720,  font: "bold 20px 'Malgun Gothic'" },
-                custName:        { x: 276,  y: 792,  font: "bold 20px 'Malgun Gothic'" },
-                custBirth:       { x: 565,  y: 780,  font: "bold 20px 'Malgun Gothic'" },
-                genderMale:      { x: 834,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                genderFemale:    { x: 869,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                custAddr:        { x: 277,  y: 848,  font: "bold 20px 'Malgun Gothic'" },
-                payOwner:        { x: 526,  y: 1050, font: "bold 20px 'Malgun Gothic'" },
-                payBirth:        { x: 1006, y: 1051, font: "bold 20px 'Malgun Gothic'" },
-                payBankInfo:     { x: 630,  y: 1080, font: "bold 20px 'Malgun Gothic'" },
-                paySign:         { x: 849,  y: 1201, font: "bold 20px 'Malgun Gothic'" },
-                bottomCustSign:  { x: 913,  y: 1499, font: "bold 20px 'Malgun Gothic'" }
+                checkMobileNew:  { x: 747,  y: 97,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                checkAgent:      { x: 1043, y: 95,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                sellerSign1:     { x: 904,  y: 167,  font: "bold 20px 'Malgun Gothic'" },
+                custSign1:       { x: 904,  y: 220,  font: "bold 20px 'Malgun Gothic'" },
+                custSign2:       { x: 904,  y: 278,  font: "bold 20px 'Malgun Gothic'" },
+                custSignCombine: { x: 950,  y: 729,  font: "bold 20px 'Malgun Gothic'" },
+                custName:        { x: 276,  y: 799,  font: "bold 20px 'Malgun Gothic'" },
+                custBirth:       { x: 565,  y: 785,  font: "bold 20px 'Malgun Gothic'" },
+                genderMale:      { x: 832,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                genderFemale:    { x: 868,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                custAddr:        { x: 277,  y: 854,  font: "bold 20px 'Malgun Gothic'" },
+                payOwner:        { x: 526,  y: 1056, font: "bold 20px 'Malgun Gothic'" },
+                payBirth:        { x: 1009, y: 1055, font: "bold 20px 'Malgun Gothic'" },
+                payBankInfo:     { x: 630,  y: 1087, font: "bold 20px 'Malgun Gothic'" },
+                paySign:         { x: 849,  y: 1205, font: "bold 20px 'Malgun Gothic'" },
+                bottomCustSign:  { x: 913,  y: 1505, font: "bold 20px 'Malgun Gothic'" }
             },
             FORM2: {
                 deviceCustName:  { x: 770, y: 205, font: "bold 20px 'Malgun Gothic'" },
@@ -326,11 +329,20 @@
             }
         }
 
+        /* 🔐 모드별 비밀번호 처리 로그인 함수 */
         function checkPw() {
             var input = document.getElementById('pw').value;
             if(input === "7000") {
+                // 일반 사용자 (판매점)
+                isDevMode = false;
                 document.getElementById('login-view').style.setProperty('display', 'none', 'important');
                 showPricePage();
+            } else if(input === "7000dev") {
+                // 개발자 전용 모드
+                isDevMode = true;
+                document.getElementById('login-view').style.setProperty('display', 'none', 'important');
+                showPricePage();
+                alert("👨‍💻 개발자 모드로 로그인되었습니다.\n(우측 하단 좌표 미세조정 패널 활성화)");
             } else {
                 alert("비밀번호가 올바르지 않습니다. 이상진과장 010-5707-7000으로 문의하세요.");
                 document.getElementById('pw').value = "";
@@ -347,6 +359,13 @@
         function showApplyPage() {
             document.getElementById('price-view').style.display = 'none';
             document.getElementById('apply-view').style.display = 'block';
+            
+            // 💡 개발자 로그인 모드일 때만 좌표 미세조정 패널을 노출합니다.
+            var studio = document.getElementById('coord-studio');
+            if(studio) {
+                studio.style.display = isDevMode ? 'block' : 'none';
+            }
+
             window.scrollTo(0, 0);
             initTodayDate();
             selectForm(1);
@@ -401,16 +420,16 @@
         }
 
         // =========================================================================
-        // 🎨 [2] 서식지 렌더링 함수 (표 좌표 100% 반영 버전)
+        // 🎨 서식지 렌더링 함수
         // =========================================================================
-
         function drawText(ctx, text, itemObj) {
             if(!itemObj) return;
             ctx.font = itemObj.font || "bold 20px 'Malgun Gothic'";
             ctx.fillStyle = "#111111";
             ctx.fillText(text, itemObj.x, itemObj.y);
 
-            if (document.getElementById("debugToggle").checked) {
+            // 개발자 모드에서 디버그 체크박스가 켜진 경우에만 빨간 점 표시
+            if (isDevMode && document.getElementById("debugToggle").checked) {
                 ctx.save();
                 ctx.strokeStyle = "red";
                 ctx.lineWidth = 1;
@@ -475,7 +494,7 @@
         }
 
         // =========================================================================
-        // 🖼️ [3] Canvas 메인 컨트롤러 (renderCanvas)
+        // 🖼️ Canvas 메인 컨트롤러 (renderCanvas)
         // =========================================================================
         function renderCanvas() {
             var canvas = document.getElementById("formCanvas");
@@ -513,7 +532,7 @@
         }
 
         // =========================================================================
-        // 🎛️ [4] 포토샵 스타일 실시간 좌표 조정 스튜디오 (Studio Controller)
+        // 🎛️ 좌표 조정 스튜디오 컨트롤러 (개발자용)
         // =========================================================================
         function populateStudioSelect() {
             const select = document.getElementById("targetItemSelect");
@@ -548,7 +567,7 @@
         }
 
         // =========================================================================
-        // 📥 [5] JPG 일괄 다운로드 함수 (Download)
+        // 📥 JPG 일괄 다운로드 함수
         // =========================================================================
         function downloadAllJPGs() {
             var canvas = document.getElementById("formCanvas");
