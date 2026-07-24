@@ -72,7 +72,7 @@
         .modal-content { margin: 40px auto; display: block; width: 95%; max-width: 1100px; height: auto; border-radius: 6px; }
         .close-btn { position: fixed; top: 15px; right: 20px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 100000; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.5); width: 45px; height: 45px; line-height: 40px; text-align: center; border-radius: 50%; }
 
-        /* [5] 🎛️ 좌표 조정 스튜디오 패널 (포토샵 스타일 UI) */
+        /* [5] 🎛️ 좌표 조정 스튜디오 패널 */
         #coord-studio { position: fixed; right: 20px; bottom: 20px; width: 280px; background: #222; color: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); font-size: 13px; z-index: 90000; }
         #coord-studio h4 { margin: 0 0 10px 0; color: #007bff; display: flex; justify-content: space-between; align-items: center; }
         .studio-row { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -198,8 +198,8 @@
                         <div class="form-group">
                             <label>성별 선택</label>
                             <div class="gender-options">
-                                <label><input type="radio" name="gender" value="M" checked onchange="renderCanvas()"> 남성 (3번 체크)</label>
-                                <label><input type="radio" name="gender" value="F" onchange="renderCanvas()"> 여성 (4번 체크)</label>
+                                <label><input type="radio" name="gender" value="M" checked onchange="renderCanvas()"> 남성 (체크)</label>
+                                <label><input type="radio" name="gender" value="F" onchange="renderCanvas()"> 여성 (체크)</label>
                             </div>
                         </div>
                         <div class="form-group">
@@ -246,7 +246,7 @@
         <img class="modal-content" id="modalImg">
     </div>
 
-    <!-- [5] 🎛️ 실시간 좌표 미세조정 스튜디오 UI -->
+    <!-- [5] 🎛️ 좌표 조정 스튜디오 패널 -->
     <div id="coord-studio">
         <h4>🎯 좌표 미세조정 툴 <label style="font-size:11px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="debugToggle" onchange="renderCanvas()"> 🐞 디버그</label></h4>
         <div class="studio-row">
@@ -266,31 +266,26 @@
 
     <script>
         // =========================================================================
-        // 📐 [1] 서식지별 중앙 좌표 설정 객체 (수정 및 관리 구역)
+        // 📐 [1] 서식지별 중앙 좌표 설정 객체 (제시된 표 이미지 좌표 100% 반영)
         // =========================================================================
         const FORM_CONFIG = {
             FORM1: {
-                checkMobileNew:  { x: 632, y: 52,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                checkAgent:      { x: 856, y: 67,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                sellerSign1:     { x: 770, y: 102, font: "bold 20px 'Malgun Gothic'" },
-                custSign1:       { x: 770, y: 134, font: "bold 20px 'Malgun Gothic'" },
-                custSign2:       { x: 770, y: 168, font: "bold 20px 'Malgun Gothic'" },
-                custSignCombine: { x: 770, y: 448, font: "bold 20px 'Malgun Gothic'" },
-                custName:        { x: 280, y: 485, font: "bold 20px 'Malgun Gothic'" },
-                custBirth:       { x: 520, y: 485, font: "bold 20px 'Malgun Gothic'" },
-                genderMale:      { x: 702, y: 483, font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                genderFemale:    { x: 735, y: 483, font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                custAddr:        { x: 280, y: 522, font: "bold 20px 'Malgun Gothic'" },
-                checkWelfare:    { x: 414, y: 604, font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                payOwner:        { x: 510, y: 650, font: "bold 20px 'Malgun Gothic'" },
-                payBirth:        { x: 800, y: 650, font: "bold 20px 'Malgun Gothic'" },
-                payBankInfo:     { x: 510, y: 676, font: "bold 20px 'Malgun Gothic'" },
-                paySign:         { x: 800, y: 742, font: "bold 20px 'Malgun Gothic'" },
-                bottomYear:      { x: 180, y: 1475, font: "bold 20px 'Malgun Gothic'" },
-                bottomMonth:     { x: 265, y: 1475, font: "bold 20px 'Malgun Gothic'" },
-                bottomDay:       { x: 320, y: 1475, font: "bold 20px 'Malgun Gothic'" },
-                bottomSeller:    { x: 140, y: 1500, font: "bold 20px 'Malgun Gothic'" },
-                bottomCustSign:  { x: 740, y: 1533, font: "bold 20px 'Malgun Gothic'" }
+                checkMobileNew:  { x: 751,  y: 99,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                checkAgent:      { x: 1045, y: 95,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                sellerSign1:     { x: 904,  y: 160,  font: "bold 20px 'Malgun Gothic'" },
+                custSign1:       { x: 904,  y: 210,  font: "bold 20px 'Malgun Gothic'" },
+                custSign2:       { x: 904,  y: 269,  font: "bold 20px 'Malgun Gothic'" },
+                custSignCombine: { x: 950,  y: 720,  font: "bold 20px 'Malgun Gothic'" },
+                custName:        { x: 276,  y: 792,  font: "bold 20px 'Malgun Gothic'" },
+                custBirth:       { x: 565,  y: 780,  font: "bold 20px 'Malgun Gothic'" },
+                genderMale:      { x: 834,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                genderFemale:    { x: 869,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                custAddr:        { x: 277,  y: 848,  font: "bold 20px 'Malgun Gothic'" },
+                payOwner:        { x: 526,  y: 1050, font: "bold 20px 'Malgun Gothic'" },
+                payBirth:        { x: 1006, y: 1051, font: "bold 20px 'Malgun Gothic'" },
+                payBankInfo:     { x: 630,  y: 1080, font: "bold 20px 'Malgun Gothic'" },
+                paySign:         { x: 849,  y: 1201, font: "bold 20px 'Malgun Gothic'" },
+                bottomCustSign:  { x: 913,  y: 1499, font: "bold 20px 'Malgun Gothic'" }
             },
             FORM2: {
                 deviceCustName:  { x: 770, y: 205, font: "bold 20px 'Malgun Gothic'" },
@@ -315,13 +310,11 @@
 
         var currentFormIdx = 1;
 
-        // 초기 실행
         function initApp() {
             initTodayDate();
             populateStudioSelect();
         }
 
-        // 오늘 날짜 세팅
         function initTodayDate() {
             var today = new Date();
             var yyyy = today.getFullYear();
@@ -333,7 +326,6 @@
             }
         }
 
-        // 비밀번호 체크
         function checkPw() {
             var input = document.getElementById('pw').value;
             if(input === "7000") {
@@ -387,7 +379,6 @@
             renderCanvas();
         }
 
-        // 입력 폼 데이터 가져오기
         function getFormData() {
             var genderRadios = document.getElementsByName("gender");
             var selectedGender = "M";
@@ -410,15 +401,15 @@
         }
 
         // =========================================================================
-        // 🎨 [2] 서식지별 렌더링 함수 독립 분리 (Draw Functions)
+        // 🎨 [2] 서식지 렌더링 함수 (표 좌표 100% 반영 버전)
         // =========================================================================
 
         function drawText(ctx, text, itemObj) {
+            if(!itemObj) return;
             ctx.font = itemObj.font || "bold 20px 'Malgun Gothic'";
             ctx.fillStyle = "#111111";
             ctx.fillText(text, itemObj.x, itemObj.y);
 
-            // 디버그 모드가 켜져 있을 경우 가이드라인 표시
             if (document.getElementById("debugToggle").checked) {
                 ctx.save();
                 ctx.strokeStyle = "red";
@@ -451,22 +442,10 @@
             }
 
             drawText(ctx, data.addr, cfg.custAddr);
-            drawText(ctx, cfg.checkWelfare.text, cfg.checkWelfare);
             drawText(ctx, data.name, cfg.payOwner);
             drawText(ctx, data.birth, cfg.payBirth);
             drawText(ctx, data.bank + " / " + data.bankNum, cfg.payBankInfo);
             drawText(ctx, data.name, cfg.paySign);
-
-            var dateParts = data.dateStr.replace(/[^0-9]/g, '');
-            if (dateParts.length >= 8) {
-                drawText(ctx, dateParts.substring(0, 4), cfg.bottomYear);
-                drawText(ctx, dateParts.substring(4, 6), cfg.bottomMonth);
-                drawText(ctx, dateParts.substring(6, 8), cfg.bottomDay);
-            } else {
-                drawText(ctx, data.dateStr, cfg.bottomYear);
-            }
-
-            drawText(ctx, data.seller, cfg.bottomSeller);
             drawText(ctx, data.name, cfg.bottomCustSign);
         }
 
