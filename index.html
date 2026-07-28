@@ -21,16 +21,16 @@
         .login-box .hint { font-size: 14px; color: #999; margin-top: 25px; margin-bottom: 0; }
 
         /* [2] 단가표 화면 */
-        #price-view { display: none; text-align: center; padding: 30px 15px; width: 100%; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
-        .page-header { background: #fff; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px; margin-top: 25px; border-left: 5px solid #007bff; text-align: left; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-        .page-header:first-child { margin-top: 0; }
+        #price-view { display: none; text-align: center; padding: 30px 15px; width: 100%; max-width: 1000px; margin: 0 auto; box-sizing: border-box; }
+        .page-header { background: #fff; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 15px; border-left: 5px solid #007bff; text-align: left; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         .page-header h1 { margin: 0; font-size: 20px; color: #333; flex-grow: 1; }
         .btn-apply { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap; }
         .btn-apply:hover { background: #218838; transform: translateY(-1px); }
-        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; cursor: zoom-in; }
 
-        /* [3] 개통 신청 독립 페이지 */
-        #apply-view { display: none; width: 100%; max-width: 1700px; /* 화면 꽉 차게 넓힘 */ margin: 0 auto; padding: 30px 15px; box-sizing: border-box; }
+        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 35px; display: block; margin-left: auto; margin-right: auto; cursor: zoom-in; }
+
+        /* [3] 개통 신청 독립 페이지 (좌우 50:50 레이아웃) */
+        #apply-view { display: none; width: 100%; max-width: 1700px; margin: 0 auto; padding: 30px 15px; box-sizing: border-box; }
         .apply-card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .apply-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
         .apply-header h2 { margin: 0; font-size: 22px; color: #333; }
@@ -44,7 +44,7 @@
         .example-container img { height: 180px; border-radius: 6px; border: 1px solid #ddd; cursor: zoom-in; transition: transform 0.2s; }
         .example-container img:hover { transform: scale(1.02); }
 
-        /* 🚀 50:50 좌우 분할 레이아웃 적용 */
+        /* 50:50 좌우 분할 레이아웃 */
         .split-layout { display: flex; gap: 30px; align-items: flex-start; }
         
         /* 좌측: 실시간 미리보기 (캔버스) */
@@ -89,7 +89,6 @@
         .coord-display { font-family: monospace; background: #111; padding: 6px; border-radius: 4px; text-align: center; margin-top: 5px; color: #00ffcc; }
         .studio-export { margin-top: 8px; font-size: 10px; color: #aaa; word-break: break-all; background: #000; padding: 5px; border-radius: 4px; max-height: 60px; overflow-y: auto; }
 
-        /* 모바일/태블릿 반응형 처리 */
         @media (max-width: 1024px) {
             .split-layout { flex-direction: column; }
             .preview-area { width: 100%; order: -1; }
@@ -113,14 +112,43 @@
         </div>
     </div>
 
-    <!-- [2] 단가표 화면 -->
+    <!-- [2] 단가표 화면 (원본 100% 동일 복원) -->
     <div id="price-view">
         <div class="page-header">
             <h1>KT MNO 외국인전용 정책표</h1>
             <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
         </div>
         <img src="price_01.png" alt="에셀트리 단가표 1" onclick="openModal(this)">
-        <!-- 기존 단가표 이미지들 생략 없이 그대로 사용하세요 -->
+
+        <div class="page-header">
+            <h1>LG MNO 외국인전용 정책표</h1>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
+        </div>
+        <img src="price_02.png" alt="에셀트리 단가표 2" onclick="openModal(this)">
+
+        <div class="page-header">
+            <h1>알뜰모바일 대기업 자회사</h1>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
+        </div>
+        <img src="price_03.png" alt="에셀트리 단가표 3" onclick="openModal(this)">
+
+        <div class="page-header">
+            <h1>알뜰모바일 중소기업</h1>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
+        </div>
+        <img src="price_04.png" alt="에셀트리 단가표 4" onclick="openModal(this)">
+
+        <div class="page-header">
+            <h1>KT M모바일 A175 단말기</h1>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
+        </div>
+        <img src="price_05.png" alt="에셀트리 단가표 5" onclick="openModal(this)">
+
+        <div class="page-header">
+            <h1>선불</h1>
+            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
+        </div>
+        <img src="price_06.png" alt="에셀트리 단가표 6" onclick="openModal(this)">
     </div>
 
     <!-- [3] 개통 신청 독립 페이지 -->
@@ -256,7 +284,6 @@
 
     <!-- [5] 🎛️ 좌표 조정 스튜디오 패널 -->
     <div id="coord-studio">
-        <!-- 기존 스튜디오 패널 내용 동일 -->
         <h4>🎯 좌표 미세조정 툴 <label style="font-size:11px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="debugToggle" onchange="renderCanvas()"> 🐞 디버그</label></h4>
         <div class="studio-row">
             <select id="targetItemSelect" onchange="updateStudioDisplay()"></select>
@@ -274,13 +301,9 @@
     </div>
 
     <script>
-        // 자바스크립트 부분은 이전과 동일하게 유지하시면 됩니다.
-        // 기존 코드의 스크립트 블록 안의 내용을 그대로 사용하세요!
-        
         var isDevMode = false;
         var mouseCoord = null;
 
-        // 요금제 테이블 마스터 데이터
         const PLAN_DATA = {
             WELCOME_1: { name: "5G 웰컴 1 (구간 37K)", price: "39,000원", discount: "29,250원" },
             WELCOME_3: { name: "5G 웰컴 3 (구간 55K)", price: "49,000원", discount: "36,750원" },
@@ -369,7 +392,7 @@
                 isDevMode = true;
                 document.getElementById('login-view').style.setProperty('display', 'none', 'important');
                 showPricePage();
-                alert("👨‍💻 개발자 모드로 로그인되었습니다.\n- 실시간 좌표 트래커 활성화\n- 좌표 미세조정 스튜디오 활성화");
+                alert("👨‍💻 개발자 모드로 로그인되었습니다.");
             } else {
                 alert("비밀번호가 올바르지 않습니다. 이상진과장 010-5707-7000으로 문의하세요.");
                 document.getElementById('pw').value = "";
