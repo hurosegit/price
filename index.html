@@ -29,7 +29,7 @@
         .btn-apply:hover { background: #218838; transform: translateY(-1px); }
         #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; cursor: zoom-in; }
 
-        /* [3] 개통 신청 페이지 */
+        /* [3] 개통 신청 독립 페이지 */
         #apply-view { display: none; width: 100%; max-width: 1100px; margin: 0 auto; padding: 30px 15px; box-sizing: border-box; }
         .apply-card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .apply-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
@@ -55,11 +55,11 @@
         .form-group { margin-bottom: 12px; }
         .form-group.full { grid-column: span 2; }
         .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
-        .form-group input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .form-group input[type="text"], .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; background: #fff; }
         
-        .gender-options { display: flex; gap: 20px; padding-top: 8px; }
-        .gender-options label { font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .gender-options input { width: 16px; height: 16px; cursor: pointer; }
+        .radio-options { display: flex; gap: 20px; padding-top: 8px; }
+        .radio-options label { font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .radio-options input { width: 16px; height: 16px; cursor: pointer; }
 
         .btn-submit { background: #007bff; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
         .btn-submit:hover { background: #0056b3; }
@@ -72,7 +72,7 @@
         .modal-content { margin: 40px auto; display: block; width: 95%; max-width: 1100px; height: auto; border-radius: 6px; }
         .close-btn { position: fixed; top: 15px; right: 20px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 100000; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.5); width: 45px; height: 45px; line-height: 40px; text-align: center; border-radius: 50%; }
 
-        /* [5] 🎛️ 좌표 조정 스튜디오 패널 (기본 숨김) */
+        /* [5] 🎛️ 좌표 조정 스튜디오 패널 */
         #coord-studio { display: none; position: fixed; right: 20px; bottom: 20px; width: 280px; background: #222; color: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); font-size: 13px; z-index: 90000; }
         #coord-studio h4 { margin: 0 0 10px 0; color: #007bff; display: flex; justify-content: space-between; align-items: center; }
         .studio-row { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -197,18 +197,39 @@
                         </div>
                         <div class="form-group">
                             <label>성별 선택</label>
-                            <div class="gender-options">
+                            <div class="radio-options">
                                 <label><input type="radio" name="gender" value="M" checked onchange="renderCanvas()"> 남성 (체크)</label>
                                 <label><input type="radio" name="gender" value="F" onchange="renderCanvas()"> 여성 (체크)</label>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>생년월일 / 외국인등록번호 앞자리</label>
+                            <label>가입 유형</label>
+                            <div class="radio-options">
+                                <label><input type="radio" name="joinType" value="NEW" checked onchange="renderCanvas()"> 신규가입</label>
+                                <label><input type="radio" name="joinType" value="MNP" onchange="renderCanvas()"> 번호이동</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>생년월일 / 외국인등록번호</label>
                             <input type="text" id="custBirth" placeholder="011129" oninput="renderCanvas()">
                         </div>
                         <div class="form-group full">
                             <label>주소</label>
                             <input type="text" id="custAddr" placeholder="서울시 중구 장충단로..." oninput="renderCanvas()">
+                        </div>
+                        <div class="form-group full">
+                            <label>요금제 선택 (KT MNO)</label>
+                            <select id="planSelect" onchange="renderCanvas()">
+                                <option value="WELCOME_1">5G 웰컴 1 (39,000원 / 약정 29,250원)</option>
+                                <option value="WELCOME_3">5G 웰컴 3 (49,000원 / 약정 36,750원)</option>
+                                <option value="WELCOME_5">5G 웰컴 5 (59,000원 / 약정 44,250원)</option>
+                                <option value="PLAN_37K">월 요금 37K 이상 (37,000원 / 약정 27,750원)</option>
+                                <option value="PLAN_49K">월 요금 49K 이상 (49,000원 / 약정 36,750원)</option>
+                                <option value="PLAN_55K">월 요금 55K 이상 (55,000원 / 약정 45,750원)</option>
+                                <option value="PLAN_69K">월 요금 69K 이상 (69,000원 / 약정 51,750원)</option>
+                                <option value="PLAN_90K">월 요금 90K 이상 (90,000원 / 약정 67,500원)</option>
+                                <option value="PLAN_110K">월 요금 110K 이상 (110,000원 / 약정 82,500원)</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>자동이체 (은행/카드사명)</label>
@@ -246,7 +267,7 @@
         <img class="modal-content" id="modalImg">
     </div>
 
-    <!-- [5] 🎛️ 좌표 조정 스튜디오 패널 (개발자 로그인 시 표시) -->
+    <!-- [5] 🎛️ 좌표 조정 스튜디오 패널 -->
     <div id="coord-studio">
         <h4>🎯 좌표 미세조정 툴 <label style="font-size:11px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="debugToggle" onchange="renderCanvas()"> 🐞 디버그</label></h4>
         <div class="studio-row">
@@ -266,31 +287,51 @@
 
     <script>
         var isDevMode = false;
-        var mouseCoord = null; // 마우스 커서 실시간 좌표
+        var mouseCoord = null;
+
+        // 요금제 테이블 마스터 데이터
+        const PLAN_DATA = {
+            WELCOME_1: { name: "5G 웰컴 1 (구간 37K)", price: "39,000원", discount: "29,250원" },
+            WELCOME_3: { name: "5G 웰컴 3 (구간 55K)", price: "49,000원", discount: "36,750원" },
+            WELCOME_5: { name: "5G 웰컴 5 (구간 69K)", price: "59,000원", discount: "44,250원" },
+            PLAN_37K:  { name: "월 요금 37K 이상",     price: "37,000원", discount: "27,750원" },
+            PLAN_49K:  { name: "월 요금 49K 이상",     price: "49,000원", discount: "36,750원" },
+            PLAN_55K:  { name: "월 요금 55K 이상",     price: "55,000원", discount: "45,750원" },
+            PLAN_69K:  { name: "월 요금 69K 이상",     price: "69,000원", discount: "51,750원" },
+            PLAN_90K:  { name: "월 요금 90K 이상",     price: "90,000원", discount: "67,500원" },
+            PLAN_110K: { name: "월 요금 110K 이상",    price: "110,000원", discount: "82,500원" }
+        };
 
         const FORM_CONFIG = {
             FORM1: {
-                checkMobileNew:  { x: 751,  y: 99,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                checkAgent:      { x: 1045, y: 95,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                sellerSign1:     { x: 904,  y: 160,  font: "bold 20px 'Malgun Gothic'" },
-                custSign1:       { x: 904,  y: 210,  font: "bold 20px 'Malgun Gothic'" },
-                custSign2:       { x: 904,  y: 269,  font: "bold 20px 'Malgun Gothic'" },
-                custSignCombine: { x: 950,  y: 720,  font: "bold 20px 'Malgun Gothic'" },
-                custName:        { x: 276,  y: 792,  font: "bold 20px 'Malgun Gothic'" },
-                custBirth:       { x: 565,  y: 780,  font: "bold 20px 'Malgun Gothic'" },
-                genderMale:      { x: 834,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                genderFemale:    { x: 869,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                custAddr:        { x: 277,  y: 848,  font: "bold 20px 'Malgun Gothic'" },
-                payOwner:        { x: 526,  y: 1050, font: "bold 20px 'Malgun Gothic'" },
-                payBirth:        { x: 1006, y: 1051, font: "bold 20px 'Malgun Gothic'" },
-                payBankInfo:     { x: 630,  y: 1080, font: "bold 20px 'Malgun Gothic'" },
-                paySign:         { x: 849,  y: 1201, font: "bold 20px 'Malgun Gothic'" },
-                bottomCustSign:  { x: 913,  y: 1499, font: "bold 20px 'Malgun Gothic'" }
+                checkMobileNew:  { x: 747,  y: 97,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                checkAgent:      { x: 1042, y: 94,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                sellerSign1:     { x: 904,  y: 166,  font: "bold 20px 'Malgun Gothic'" },
+                custSign1:       { x: 904,  y: 218,  font: "bold 20px 'Malgun Gothic'" },
+                custSign2:       { x: 904,  y: 278,  font: "bold 20px 'Malgun Gothic'" },
+                custSignCombine: { x: 950,  y: 728,  font: "bold 20px 'Malgun Gothic'" },
+                custName:        { x: 276,  y: 798,  font: "bold 20px 'Malgun Gothic'" },
+                custBirth:       { x: 565,  y: 784,  font: "bold 20px 'Malgun Gothic'" },
+                genderMale:      { x: 831,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                genderFemale:    { x: 866,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                custAddr:        { x: 277,  y: 853,  font: "bold 20px 'Malgun Gothic'" },
+                payOwner:        { x: 526,  y: 1056, font: "bold 20px 'Malgun Gothic'" },
+                payBirth:        { x: 1009, y: 1055, font: "bold 20px 'Malgun Gothic'" },
+                payBankInfo:     { x: 630,  y: 1087, font: "bold 20px 'Malgun Gothic'" },
+                paySign:         { x: 849,  y: 1206, font: "bold 20px 'Malgun Gothic'" },
+                bottomCustSign:  { x: 913,  y: 1505, font: "bold 20px 'Malgun Gothic'" },
+                bottomDateStr:   { x: 117,  y: 1481, font: "bold 16px 'Malgun Gothic'" },
+                bottomSeller:    { x: 118,  y: 1504, font: "bold 16px 'Malgun Gothic'" }
             },
             FORM2: {
-                deviceCustName:  { x: 770, y: 205, font: "bold 20px 'Malgun Gothic'" },
-                midCustSign:     { x: 770, y: 560, font: "bold 20px 'Malgun Gothic'" },
-                applyDateStr:    { x: 200, y: 560, font: "bold 20px 'Malgun Gothic'" }
+                checkJoinNew:    { x: 920, y: 103,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                checkJoinMNP:    { x: 973, y: 103,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
+                deviceCustName:  { x: 898, y: 505,  font: "bold 20px 'Malgun Gothic'" },
+                midCustSign:     { x: 907, y: 1371, font: "bold 20px 'Malgun Gothic'" },
+                applyDateStr:    { x: 135, y: 1544, font: "bold 20px 'Malgun Gothic'" },
+                planName:        { x: 250, y: 255,  font: "bold 18px 'Malgun Gothic'" },
+                planPrice:       { x: 250, y: 295,  font: "bold 18px 'Malgun Gothic'" },
+                planDiscount:    { x: 250, y: 335,  font: "bold 18px 'Malgun Gothic'" }
             },
             FORM3: {
                 agreeSign1:      { x: 800, y: 98,  font: "bold 20px 'Malgun Gothic'" },
@@ -313,7 +354,7 @@
         function initApp() {
             initTodayDate();
             populateStudioSelect();
-            initCanvasMouseEvents(); // 🖱️ 실시간 좌표 트래킹 이벤트 등록
+            initCanvasMouseEvents();
         }
 
         function initTodayDate() {
@@ -396,24 +437,32 @@
             var genderRadios = document.getElementsByName("gender");
             var selectedGender = "M";
             for(var i=0; i<genderRadios.length; i++) {
-                if(genderRadios[i].checked) {
-                    selectedGender = genderRadios[i].value;
-                    break;
-                }
+                if(genderRadios[i].checked) { selectedGender = genderRadios[i].value; break; }
             }
+
+            var joinRadios = document.getElementsByName("joinType");
+            var selectedJoin = "NEW";
+            for(var j=0; j<joinRadios.length; j++) {
+                if(joinRadios[j].checked) { selectedJoin = joinRadios[j].value; break; }
+            }
+
+            var selectedPlanKey = document.getElementById("planSelect").value;
+            var planObj = PLAN_DATA[selectedPlanKey] || PLAN_DATA["WELCOME_1"];
+
             return {
                 name: document.getElementById("custName").value || "홍길동",
                 gender: selectedGender,
+                joinType: selectedJoin,
                 birth: document.getElementById("custBirth").value || "011129",
                 addr: document.getElementById("custAddr").value || "서울시 중구 장충단로...",
                 bank: document.getElementById("bankName").value || "하나은행",
                 bankNum: document.getElementById("bankNum").value || "123-456-7890",
                 seller: document.getElementById("sellerName").value || "사가르",
-                dateStr: document.getElementById("applyDate").value || "2026.07.21"
+                dateStr: document.getElementById("applyDate").value || "2026.07.28",
+                plan: planObj
             };
         }
 
-        // 🖱️ 개발자 전용 실시간 마우스 좌표 트래킹
         function initCanvasMouseEvents() {
             var canvas = document.getElementById("formCanvas");
             
@@ -436,7 +485,6 @@
                 renderCanvas();
             });
 
-            // 🎯 마우스로 클릭 시 현재 좌표를 스튜디오 항목 위치로 즉시 설정
             canvas.addEventListener("click", function(e) {
                 if(!isDevMode || !mouseCoord) return;
                 const itemKey = document.getElementById("targetItemSelect").value;
@@ -451,7 +499,7 @@
         }
 
         function drawText(ctx, text, itemObj) {
-            if(!itemObj) return;
+            if(!itemObj || text === undefined) return;
             ctx.font = itemObj.font || "bold 20px 'Malgun Gothic'";
             ctx.fillStyle = "#111111";
             ctx.fillText(text, itemObj.x, itemObj.y);
@@ -481,11 +529,8 @@
             drawText(ctx, data.name, cfg.custName);
             drawText(ctx, data.birth, cfg.custBirth);
 
-            if (data.gender === "M") {
-                drawText(ctx, cfg.genderMale.text, cfg.genderMale);
-            } else {
-                drawText(ctx, cfg.genderFemale.text, cfg.genderFemale);
-            }
+            if (data.gender === "M") drawText(ctx, cfg.genderMale.text, cfg.genderMale);
+            else drawText(ctx, cfg.genderFemale.text, cfg.genderFemale);
 
             drawText(ctx, data.addr, cfg.custAddr);
             drawText(ctx, data.name, cfg.payOwner);
@@ -493,13 +538,27 @@
             drawText(ctx, data.bank + " / " + data.bankNum, cfg.payBankInfo);
             drawText(ctx, data.name, cfg.paySign);
             drawText(ctx, data.name, cfg.bottomCustSign);
+
+            // 신규 추가된 좌표
+            drawText(ctx, data.dateStr, cfg.bottomDateStr);
+            drawText(ctx, data.seller, cfg.bottomSeller);
         }
 
         function drawForm2(ctx, data) {
             const cfg = FORM_CONFIG.FORM2;
+
+            // 가입유형 체크
+            if(data.joinType === "NEW") drawText(ctx, cfg.checkJoinNew.text, cfg.checkJoinNew);
+            else drawText(ctx, cfg.checkJoinMNP.text, cfg.checkJoinMNP);
+
             drawText(ctx, data.name, cfg.deviceCustName);
             drawText(ctx, data.name, cfg.midCustSign);
             drawText(ctx, data.dateStr, cfg.applyDateStr);
+
+            // 요금제 정보 인쇄
+            drawText(ctx, data.plan.name, cfg.planName);
+            drawText(ctx, data.plan.price, cfg.planPrice);
+            drawText(ctx, data.plan.discount, cfg.planDiscount);
         }
 
         function drawForm3(ctx, data) {
@@ -540,10 +599,8 @@
                 else if (currentFormIdx === 3) drawForm3(ctx, data);
                 else if (currentFormIdx === 4) drawForm4(ctx, data);
 
-                // 🎯 개발자 모드 전용: 마우스 위치에 실시간 좌표 라벨 렌더링
                 if(isDevMode && mouseCoord) {
                     ctx.save();
-                    // 십자선
                     ctx.strokeStyle = "rgba(0, 123, 255, 0.7)";
                     ctx.lineWidth = 1;
                     ctx.beginPath();
@@ -551,7 +608,6 @@
                     ctx.moveTo(0, mouseCoord.y); ctx.lineTo(canvas.width, mouseCoord.y);
                     ctx.stroke();
 
-                    // 좌표 텍스트 박스
                     var text = `X: ${mouseCoord.x}, Y: ${mouseCoord.y}`;
                     ctx.font = "bold 16px monospace";
                     var textWidth = ctx.measureText(text).width;
