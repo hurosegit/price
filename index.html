@@ -3,124 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M mobile 개통 타이핑 시스템</title>
-    <!-- PDF / JPG 생성 라이브러리 -->
+    <title>M mobile 이용신청서 타이핑 시스템</title>
+    <!-- 고화질 JPG / PDF 추출 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: '맑은 고딕', 'Malgun Gothic', sans-serif; }
-        body { margin: 0; padding: 10px; background-color: #d0d7de; color: #000; }
+        body { margin: 0; padding: 10px; background-color: #202225; color: #fff; }
 
-        /* 전체 레이아웃: 좌측 서식지 / 우측 입력 패널 */
-        .container { display: flex; gap: 15px; max-width: 1700px; margin: 0 auto; height: calc(100vh - 65px); }
+        .header-bar { max-width: 1750px; margin: 0 auto 10px; background: #ea1d25; padding: 10px 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .header-bar h1 { margin: 0; font-size: 16px; font-weight: 800; }
 
-        /* [좌측] 공식 서식지 출력 영역 */
-        .sheet-section { flex: 1.2; background: #525659; padding: 15px; border-radius: 4px; overflow: auto; display: flex; justify-content: center; }
+        /* 전체 레이아웃: [좌측: 서식지 6장] / [우측: 입력 컨트롤 패널] */
+        .main-layout { display: flex; gap: 15px; max-width: 1750px; margin: 0 auto; height: calc(100vh - 110px); }
+
+        /* [좌측] 서식지 미리보기 영역 */
+        .preview-panel { flex: 1.25; background: #2f3136; padding: 15px; border-radius: 6px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
         .paper-canvas { 
             position: relative; 
             width: 800px; 
             height: 1131px; 
             background-color: #fff; 
-            background-image: url('ktm_1.jpg'); 
             background-size: 100% 100%; 
             background-repeat: no-repeat; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+            box-shadow: 0 0 12px rgba(0,0,0,0.5); 
         }
+
+        .page-tag { position: absolute; top: -20px; left: 0; background: #ea1d25; color: #fff; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 2px; }
 
         /* 서식지 오버레이 텍스트 및 V 체크 스타일 */
         .field { position: absolute; font-size: 12px; font-weight: bold; color: #000; white-space: nowrap; pointer-events: none; }
-        .check-v { position: absolute; font-size: 15px; font-weight: 900; color: #000; pointer-events: none; }
+        .check-v { position: absolute; font-size: 14px; font-weight: 900; color: #000; pointer-events: none; }
 
         /* ========================================================= */
-        /* [좌측 서식지 1:1 정밀 좌표 매핑] */
+        /* [1장 이용신청서 오버레이 좌표]                              */
         /* ========================================================= */
-        /* 체크표시 (V) 좌표 */
-        #v_work_new     { top: 62px; left: 248px; } /* 업무구분: 신규 */
-        #v_work_mnp     { top: 62px; left: 278px; } /* 업무구분: 이동 */
-        #v_work_chg     { top: 62px; left: 308px; } /* 업무구분: 기변 */
+        #v_work_new     { top: 62px; left: 248px; }
+        #v_work_mnp     { top: 62px; left: 278px; }
+        #v_work_chg     { top: 62px; left: 308px; }
 
-        #v_cust_p       { top: 78px; left: 248px; } /* 고객구분: 개인 */
-        #v_cust_b       { top: 78px; left: 278px; } /* 고객구분: 개인사업자 */
-        #v_cust_c       { top: 78px; left: 318px; } /* 고객구분: 법인 */
+        #v_cust_p       { top: 78px; left: 248px; }
+        #v_cust_b       { top: 78px; left: 278px; }
+        #v_cust_c       { top: 78px; left: 318px; }
 
-        #v_gender_m     { top: 345px; left: 812px; } /* 성별: 남 */
-        #v_gender_f     { top: 345px; left: 846px; } /* 성별: 여 */
+        #v_gender_m     { top: 345px; left: 812px; }
+        #v_gender_f     { top: 345px; left: 846px; }
 
-        #v_bill_mms     { top: 416px; left: 216px; } /* 명세서: MMS */
-        #v_bill_email   { top: 416px; left: 326px; } /* 명세서: 이메일 */
-        #v_bill_giro    { top: 416px; left: 426px; } /* 명세서: 지로 */
+        #v_bill_mms     { top: 416px; left: 216px; }
+        #v_bill_email   { top: 416px; left: 326px; }
+        #v_bill_giro    { top: 416px; left: 426px; }
 
-        #v_pay_bank     { top: 440px; left: 110px; } /* 자동납부: 자동이체 */
-        #v_pay_card     { top: 440px; left: 305px; } /* 자동납부: 신용카드 */
+        #v_pay_bank     { top: 440px; left: 110px; }
+        #v_pay_card     { top: 440px; left: 305px; }
 
-        /* 텍스트 데이터 좌표 */
-        #f_name         { top: 350px; left: 180px; font-size: 13px; } /* 고객명 */
-        #f_rrn          { top: 350px; left: 430px; font-size: 13px; } /* 주민번호 */
-        #f_phone        { top: 372px; left: 180px; } /* 개통/연락처 */
-        #f_email        { top: 372px; left: 430px; } /* 이메일 */
-        #f_address      { top: 395px; left: 180px; } /* 주소 */
+        #f1_name        { top: 350px; left: 180px; font-size: 13px; }
+        #f1_rrn         { top: 350px; left: 430px; font-size: 13px; }
+        #f1_phone       { top: 372px; left: 180px; }
+        #f1_email       { top: 372px; left: 430px; }
+        #f1_address     { top: 395px; left: 180px; }
 
-        #f_bankName     { top: 465px; left: 240px; } /* 은행/카드사명 */
-        #f_payNum       { top: 465px; left: 430px; } /* 계좌/카드번호 */
-        #f_payOwner     { top: 508px; left: 180px; } /* 예금주 */
+        #f1_bankName    { top: 465px; left: 240px; }
+        #f1_payNum      { top: 465px; left: 430px; }
+        #f1_payOwner    { top: 508px; left: 180px; }
 
-        #f_model        { top: 122px; left: 715px; } /* 모델명 */
-        #f_serial       { top: 140px; left: 715px; } /* 일련번호 */
-        #f_price        { top: 115px; left: 130px; } /* 출고가 */
-        #f_support      { top: 115px; left: 250px; } /* 공시지원금 */
-        #f_principal    { top: 160px; left: 370px; } /* 할부원금 */
-        #f_planName     { top: 250px; left: 110px; } /* 요금상품명 */
-        #f_planFee      { top: 250px; left: 260px; } /* 월정액 요금 */
-        #f_monthPay     { top: 312px; left: 730px; } /* 월 기본납부액 */
+        #f1_model       { top: 122px; left: 715px; }
+        #f1_serial      { top: 140px; left: 715px; }
+        #f1_price       { top: 115px; left: 130px; }
+        #f1_support     { top: 115px; left: 250px; }
+        #f1_principal   { top: 160px; left: 370px; }
+        #f1_planName    { top: 250px; left: 110px; }
+        #f1_planFee     { top: 250px; left: 260px; }
+        #f1_monthPay    { top: 312px; left: 730px; }
 
-        #f_reqPhone     { top: 718px; left: 185px; } /* 번호이동 전화번호 */
-        #f_prevOp       { top: 718px; left: 485px; } /* 변경 전 통신사 */
+        #f1_reqPhone    { top: 718px; left: 185px; }
+        #f1_prevOp      { top: 718px; left: 485px; }
+        #f1_sellerName  { top: 38px; left: 810px; }
 
-        #f_sellerName   { top: 38px; left: 810px; } /* 상담사/판매자 */
+        #p1_date        { top: 930px; left: 210px; font-size: 13px; }
+        #p1_sign        { top: 930px; left: 640px; font-size: 13px; }
+
+        /* 2~5장 서명란 좌표 */
+        #p2_sign1       { top: 125px; left: 680px; }
+        #p2_sign2       { top: 508px; left: 680px; }
+        #p3_sign1       { top: 498px; left: 680px; }
+        #p3_sign2       { top: 588px; left: 680px; }
+        #p3_sign3       { top: 672px; left: 680px; }
+        #p3_sign4       { top: 950px; left: 680px; }
+        #p4_sign1       { top: 205px; left: 680px; }
+        #p4_sign2       { top: 318px; left: 680px; }
+        #p4_sign3       { top: 412px; left: 680px; }
+        #p4_sign4       { top: 550px; left: 680px; }
+        #p4_sign5       { top: 705px; left: 680px; }
+        #p4_sign6       { top: 802px; left: 680px; }
+        #p4_sign7       { top: 920px; left: 680px; }
+        #p5_sign1       { top: 572px; left: 680px; }
+
+        /* 6장 표준안내서 좌표 */
+        #p6_price       { top: 165px; left: 130px; }
+        #p6_support     { top: 165px; left: 280px; }
+        #p6_principal   { top: 228px; left: 200px; }
+        #p6_planName    { top: 262px; left: 130px; }
+        #p6_planFee     { top: 262px; left: 250px; }
+        #p6_monthPay    { top: 330px; left: 730px; }
+        #p6_phone       { top: 885px; left: 220px; }
+        #p6_date        { top: 928px; left: 200px; }
+        #p6_sign        { top: 928px; left: 640px; }
 
         /* [우측] 입력 컨트롤 패널 (엑셀 디자인 100% 재현) */
-        .control-panel { flex: 0.8; background: #fff; border: 2px solid #000; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .control-panel { flex: 0.75; background: #fff; color: #000; border: 2px solid #000; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         
-        .panel-header { background: #000; color: #fff; padding: 6px 10px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-header { background: #000; color: #fff; padding: 6px 10px; font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
         .btn-link { background: #000; color: #fff; border: 1px solid #fff; padding: 2px 8px; font-size: 11px; cursor: pointer; text-decoration: none; }
 
-        .sec-header { background: #1f2a44; color: #fff; padding: 4px 8px; font-size: 12px; font-weight: bold; margin-top: 4px; }
+        .sec-header { background: #1f2a44; color: #fff; padding: 4px 8px; font-size: 11px; font-weight: bold; margin-top: 2px; }
 
         .ctrl-table { width: 100%; border-collapse: collapse; }
         .ctrl-table th, .ctrl-table td { border: 1px solid #777; padding: 3px 5px; font-size: 11px; }
         .ctrl-table th { background: #1f2a44; color: #fff; text-align: center; width: 25%; font-weight: normal; }
         .ctrl-table td { background: #fff; }
-        .ctrl-table input, .ctrl-table select { width: 100%; border: none; outline: none; font-size: 11px; font-weight: bold; background: transparent; }
+        .ctrl-table input, .ctrl-table select { width: 100%; border: none; outline: none; font-size: 11px; font-weight: bold; background: transparent; color: #000; }
 
-        /* 안내 문구 및 PDF 생성 버튼 */
-        .info-box { background: #d9e1f2; border: 1px solid #8ea9db; padding: 8px; font-size: 11px; line-height: 1.4; color: #000; }
+        .info-box { background: #d9e1f2; border: 1px solid #8ea9db; padding: 8px; font-size: 11px; line-height: 1.4; color: #000; margin-top: 5px; }
         .info-box ul { margin: 3px 0 0 15px; padding: 0; }
 
-        .btn-pdf { background: #1f4e78; color: #fff; border: none; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; margin-top: 5px; }
+        .btn-pdf { background: #1f4e78; color: #fff; border: none; padding: 10px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; margin-top: 5px; border-radius: 3px; }
         .btn-pdf:hover { background: #113355; }
 
-        /* [하단] 통신사 서식지 선택 탭 바 */
-        .bottom-tab-bar { height: 45px; background: #000; display: flex; align-items: center; padding: 0 10px; gap: 4px; overflow-x: auto; }
+        /* [하단] 서식지 전환 탭 바 */
+        .bottom-tab-bar { height: 40px; background: #000; display: flex; align-items: center; padding: 0 10px; gap: 4px; overflow-x: auto; margin-top: 10px; }
         .nav-tab { padding: 6px 12px; background: #0070c0; color: #fff; font-size: 11px; font-weight: bold; border-radius: 3px 3px 0 0; border: none; cursor: pointer; white-space: nowrap; }
         .nav-tab.active { background: #ffc000; color: #000; }
         .nav-tab.dark { background: #333; }
 
         @media print {
             body { padding: 0; background: #fff; }
-            .control-panel, .bottom-tab-bar { display: none !important; }
-            .container { display: block; }
-            .sheet-section { padding: 0; background: #fff; }
-            .paper-canvas { box-shadow: none; }
+            .control-panel, .bottom-tab-bar, .header-bar { display: none !important; }
+            .main-layout, .preview-panel { display: block; background: #fff; padding: 0; max-height: none; overflow: visible; }
+            .paper-canvas { box-shadow: none; page-break-after: always; margin-bottom: 0; }
+            .page-tag { display: none; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- [좌측] 공식 서식지 미리보기 (입력 시 실시간 글자 + V 체크 생성) -->
-    <div class="sheet-section">
-        <div class="paper-canvas" id="paperCanvas">
-            <!-- V 체크 오버레이 -->
+<div class="header-bar">
+    <h1>📱 kt M mobile 개통 타이핑 시스템 (Ver.2026.08.01)</h1>
+    <span style="font-size: 12px;">영업 / 개통 대행사 전용</span>
+</div>
+
+<div class="main-layout">
+    <!-- [좌측] 공식 서식지 미리보기 (1~6장 연속 오버레이) -->
+    <div class="preview-panel">
+        <!-- 1장: 이용신청서 -->
+        <div class="paper-canvas" id="page1" style="background-image: url('ktm_1.jpg');">
+            <div class="page-tag">1장: 이용신청서</div>
             <div class="check-v" id="v_work_new"></div>
             <div class="check-v" id="v_work_mnp"></div>
             <div class="check-v" id="v_work_chg"></div>
@@ -139,29 +175,79 @@
             <div class="check-v" id="v_pay_bank"></div>
             <div class="check-v" id="v_pay_card"></div>
 
-            <!-- 텍스트 오버레이 -->
-            <div class="field" id="f_name"></div>
-            <div class="field" id="f_rrn"></div>
-            <div class="field" id="f_phone"></div>
-            <div class="field" id="f_email"></div>
-            <div class="field" id="f_address"></div>
+            <div class="field" id="f1_name"></div>
+            <div class="field" id="f1_rrn"></div>
+            <div class="field" id="f1_phone"></div>
+            <div class="field" id="f1_email"></div>
+            <div class="field" id="f1_address"></div>
 
-            <div class="field" id="f_bankName"></div>
-            <div class="field" id="f_payNum"></div>
-            <div class="field" id="f_payOwner"></div>
+            <div class="field" id="f1_bankName"></div>
+            <div class="field" id="f1_payNum"></div>
+            <div class="field" id="f1_payOwner"></div>
 
-            <div class="field" id="f_model"></div>
-            <div class="field" id="f_serial"></div>
-            <div class="field" id="f_price"></div>
-            <div class="field" id="f_support"></div>
-            <div class="field" id="f_principal"></div>
-            <div class="field" id="f_planName"></div>
-            <div class="field" id="f_planFee"></div>
-            <div class="field" id="f_monthPay"></div>
+            <div class="field" id="f1_model"></div>
+            <div class="field" id="f1_serial"></div>
+            <div class="field" id="f1_price"></div>
+            <div class="field" id="f1_support"></div>
+            <div class="field" id="f1_principal"></div>
+            <div class="field" id="f1_planName"></div>
+            <div class="field" id="f1_planFee"></div>
+            <div class="field" id="f1_monthPay"></div>
 
-            <div class="field" id="f_reqPhone"></div>
-            <div class="field" id="f_prevOp"></div>
-            <div class="field" id="f_sellerName"></div>
+            <div class="field" id="f1_reqPhone"></div>
+            <div class="field" id="f1_prevOp"></div>
+            <div class="field" id="f1_sellerName"></div>
+
+            <div class="field" id="p1_date"></div>
+            <div class="field" id="p1_sign"></div>
+        </div>
+
+        <!-- 2장: 동의서 (1) -->
+        <div class="paper-canvas" id="page2" style="background-image: url('ktm_2.jpg');">
+            <div class="page-tag">2장: 활용동의서 (1)</div>
+            <div class="field" id="p2_sign1"></div>
+            <div class="field" id="p2_sign2"></div>
+        </div>
+
+        <!-- 3장: 동의서 (2) -->
+        <div class="paper-canvas" id="page3" style="background-image: url('ktm_3.jpg');">
+            <div class="page-tag">3장: 활용동의서 (2)</div>
+            <div class="field" id="p3_sign1"></div>
+            <div class="field" id="p3_sign2"></div>
+            <div class="field" id="p3_sign3"></div>
+            <div class="field" id="p3_sign4"></div>
+        </div>
+
+        <!-- 4장: 동의서 (3) -->
+        <div class="paper-canvas" id="page4" style="background-image: url('ktm_4.jpg');">
+            <div class="page-tag">4장: 활용동의서 (3)</div>
+            <div class="field" id="p4_sign1"></div>
+            <div class="field" id="p4_sign2"></div>
+            <div class="field" id="p4_sign3"></div>
+            <div class="field" id="p4_sign4"></div>
+            <div class="field" id="p4_sign5"></div>
+            <div class="field" id="p4_sign6"></div>
+            <div class="field" id="p4_sign7"></div>
+        </div>
+
+        <!-- 5장: 동의서 (4) & 결합 -->
+        <div class="paper-canvas" id="page5" style="background-image: url('ktm_5.jpg');">
+            <div class="page-tag">5장: 활용동의서 (4) & 결합</div>
+            <div class="field" id="p5_sign1"></div>
+        </div>
+
+        <!-- 6장: 무선서비스 계약 표준안내서 -->
+        <div class="paper-canvas" id="page6" style="background-image: url('ktm_6.jpg');">
+            <div class="page-tag">6장: 표준안내서</div>
+            <div class="field" id="p6_price"></div>
+            <div class="field" id="p6_support"></div>
+            <div class="field" id="p6_principal"></div>
+            <div class="field" id="p6_planName"></div>
+            <div class="field" id="p6_planFee"></div>
+            <div class="field" id="p6_monthPay"></div>
+            <div class="field" id="p6_phone"></div>
+            <div class="field" id="p6_date"></div>
+            <div class="field" id="p6_sign"></div>
         </div>
     </div>
 
@@ -216,7 +302,7 @@
                 <td>
                     <select id="in_gender" onchange="syncAll()">
                         <option value="남">남</option>
-                        <option value="여">여</option>
+                        <option value="여" selected>여</option>
                     </select>
                 </td>
             </tr>
@@ -336,7 +422,7 @@
         </div>
 
         <!-- PDF / JPG 생성 버튼 -->
-        <button class="btn-pdf" onclick="generatePDF()">PDF / JPG 생성</button>
+        <button class="btn-pdf" onclick="downloadAllJPG()">📸 8월 최신 서식지 6장 전체 JPG 다운로드</button>
     </div>
 </div>
 
@@ -354,67 +440,97 @@
 </div>
 
 <script>
-    // 오버레이 및 V 체크 실시간 매핑 함수
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
+
     function syncAll() {
-        // 1. V 체크박스 초기화
+        // V 체크박스 초기화
         const checkIds = ['v_work_new', 'v_work_mnp', 'v_work_chg', 'v_cust_p', 'v_cust_b', 'v_cust_c', 'v_gender_m', 'v_gender_f', 'v_bill_mms', 'v_bill_email', 'v_bill_giro', 'v_pay_bank', 'v_pay_card'];
         checkIds.forEach(id => document.getElementById(id).innerText = '');
 
-        // 2. 업무구분 체크
+        // 업무구분
         const workType = document.getElementById('in_workType').value;
         if (workType === '신규') document.getElementById('v_work_new').innerText = 'V';
         else if (workType === '번호이동') document.getElementById('v_work_mnp').innerText = 'V';
         else if (workType === '기기변경') document.getElementById('v_work_chg').innerText = 'V';
 
-        // 3. 고객구분 체크
+        // 고객구분
         const custType = document.getElementById('in_custType').value;
         if (custType === '개인') document.getElementById('v_cust_p').innerText = 'V';
         else if (custType === '개인사업자') document.getElementById('v_cust_b').innerText = 'V';
         else if (custType === '법인') document.getElementById('v_cust_c').innerText = 'V';
 
-        // 4. 성별 체크
+        // 성별
         const gender = document.getElementById('in_gender').value;
         if (gender === '남') document.getElementById('v_gender_m').innerText = 'V';
         else if (gender === '여') document.getElementById('v_gender_f').innerText = 'V';
 
-        // 5. 명세서종류 체크
+        // 명세서종류
         const billType = document.getElementById('in_billType').value;
         if (billType === 'MMS') document.getElementById('v_bill_mms').innerText = 'V';
         else if (billType === '이메일') document.getElementById('v_bill_email').innerText = 'V';
         else if (billType === '지로') document.getElementById('v_bill_giro').innerText = 'V';
 
-        // 6. 자동납부 체크
+        // 자동납부
         const payMethod = document.getElementById('in_payMethod').value;
         if (payMethod === '자동이체') document.getElementById('v_pay_bank').innerText = 'V';
         else if (payMethod === '신용카드') document.getElementById('v_pay_card').innerText = 'V';
 
-        // 7. 텍스트 필드 값 매핑
-        document.getElementById('f_name').innerText = document.getElementById('in_name').value;
-        document.getElementById('f_rrn').innerText = document.getElementById('in_rrn').value;
-        document.getElementById('f_phone').innerText = document.getElementById('in_phone').value;
-        document.getElementById('f_address').innerText = document.getElementById('in_address').value;
-        document.getElementById('f_planName').innerText = document.getElementById('in_planName').value;
-        document.getElementById('f_bankName').innerText = document.getElementById('in_bankName').value;
-        document.getElementById('f_payNum').innerText = document.getElementById('in_payNum').value;
-        document.getElementById('f_payOwner').innerText = document.getElementById('in_payOwner').value ? document.getElementById('in_payOwner').value : '';
-        document.getElementById('f_prevOp').innerText = document.getElementById('in_prevOp').value;
-        document.getElementById('f_sellerName').innerText = document.getElementById('in_sellerName').value;
+        // 텍스트 동기화
+        const name = document.getElementById('in_name').value;
+        const nameSign = name ? `${name} (인)` : '';
+
+        document.getElementById('f1_name').innerText = name;
+        document.getElementById('f1_rrn').innerText = document.getElementById('in_rrn').value;
+        document.getElementById('f1_phone').innerText = document.getElementById('in_phone').value;
+        document.getElementById('f1_email').innerText = document.getElementById('in_email').value;
+        document.getElementById('f1_address').innerText = document.getElementById('in_address').value;
+        document.getElementById('f1_planName').innerText = document.getElementById('in_planName').value;
+        document.getElementById('f1_bankName').innerText = document.getElementById('in_bankName').value;
+        document.getElementById('f1_payNum').innerText = document.getElementById('in_payNum').value;
+        document.getElementById('f1_payOwner').innerText = document.getElementById('in_payOwner').value;
+        document.getElementById('f1_prevOp').innerText = document.getElementById('in_prevOp').value;
+        document.getElementById('f1_sellerName').innerText = document.getElementById('in_sellerName').value;
+
+        document.getElementById('p1_date').innerText = dateStr;
+        document.getElementById('p1_sign').innerText = nameSign;
+
+        // 서명란 동시 매핑
+        document.getElementById('p2_sign1').innerText = nameSign;
+        document.getElementById('p2_sign2').innerText = nameSign;
+        document.getElementById('p3_sign1').innerText = nameSign;
+        document.getElementById('p3_sign2').innerText = nameSign;
+        document.getElementById('p3_sign3').innerText = nameSign;
+        document.getElementById('p3_sign4').innerText = nameSign;
+        document.getElementById('p4_sign1').innerText = nameSign;
+        document.getElementById('p4_sign2').innerText = nameSign;
+        document.getElementById('p4_sign3').innerText = nameSign;
+        document.getElementById('p4_sign4').innerText = nameSign;
+        document.getElementById('p4_sign5').innerText = nameSign;
+        document.getElementById('p4_sign6').innerText = nameSign;
+        document.getElementById('p4_sign7').innerText = nameSign;
+        document.getElementById('p5_sign1').innerText = nameSign;
+
+        document.getElementById('p6_planName').innerText = document.getElementById('in_planName').value;
+        document.getElementById('p6_phone').innerText = document.getElementById('in_phone').value;
+        document.getElementById('p6_date').innerText = dateStr;
+        document.getElementById('p6_sign').innerText = nameSign;
     }
 
-    // PDF / JPG 이미지 생성 다운로드
-    function generatePDF() {
+    // 6장 연속 다운로드
+    async function downloadAllJPG() {
         const name = document.getElementById('in_name').value || '신청서';
-        const canvas = document.getElementById('paperCanvas');
-
-        html2canvas(canvas, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => {
+        for (let i = 1; i <= 6; i++) {
+            const pageElem = document.getElementById(`page${i}`);
+            const cvs = await html2canvas(pageElem, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const link = document.createElement('a');
-            link.download = `Mmobile_신청서_${name}.jpg`;
+            link.download = `KTM모바일_${name}_${i}페이지.jpg`;
             link.href = cvs.toDataURL('image/jpeg', 0.95);
             link.click();
-        });
+            await new Promise(r => setTimeout(r, 300));
+        }
     }
 
-    // 최초 실행 시 매핑 실행
     window.onload = syncAll;
 </script>
 
