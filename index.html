@@ -3,708 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>에셀트리 보안 정책실 - 단가표 및 개통신청</title>
+    <title>M mobile 개통 타이핑 시스템</title>
+    <!-- PDF / JPG 생성 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* [공통] 기본 스타일 */
-        body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; min-height: 100vh; }
+        * { box-sizing: border-box; font-family: '맑은 고딕', 'Malgun Gothic', sans-serif; }
+        body { margin: 0; padding: 10px; background-color: #d0d7de; color: #000; }
+
+        /* 전체 레이아웃: 좌측 서식지 / 우측 입력 패널 */
+        .container { display: flex; gap: 15px; max-width: 1700px; margin: 0 auto; height: calc(100vh - 65px); }
+
+        /* [좌측] 공식 서식지 출력 영역 */
+        .sheet-section { flex: 1.2; background: #525659; padding: 15px; border-radius: 4px; overflow: auto; display: flex; justify-content: center; }
+        .paper-canvas { 
+            position: relative; 
+            width: 800px; 
+            height: 1131px; 
+            background-color: #fff; 
+            background-image: url('ktm_1.jpg'); 
+            background-size: 100% 100%; 
+            background-repeat: no-repeat; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+        }
+
+        /* 서식지 오버레이 텍스트 및 V 체크 스타일 */
+        .field { position: absolute; font-size: 12px; font-weight: bold; color: #000; white-space: nowrap; pointer-events: none; }
+        .check-v { position: absolute; font-size: 15px; font-weight: 900; color: #000; pointer-events: none; }
+
+        /* ========================================================= */
+        /* [좌측 서식지 1:1 정밀 좌표 매핑] */
+        /* ========================================================= */
+        /* 체크표시 (V) 좌표 */
+        #v_work_new     { top: 62px; left: 248px; } /* 업무구분: 신규 */
+        #v_work_mnp     { top: 62px; left: 278px; } /* 업무구분: 이동 */
+        #v_work_chg     { top: 62px; left: 308px; } /* 업무구분: 기변 */
+
+        #v_cust_p       { top: 78px; left: 248px; } /* 고객구분: 개인 */
+        #v_cust_b       { top: 78px; left: 278px; } /* 고객구분: 개인사업자 */
+        #v_cust_c       { top: 78px; left: 318px; } /* 고객구분: 법인 */
+
+        #v_gender_m     { top: 345px; left: 812px; } /* 성별: 남 */
+        #v_gender_f     { top: 345px; left: 846px; } /* 성별: 여 */
+
+        #v_bill_mms     { top: 416px; left: 216px; } /* 명세서: MMS */
+        #v_bill_email   { top: 416px; left: 326px; } /* 명세서: 이메일 */
+        #v_bill_giro    { top: 416px; left: 426px; } /* 명세서: 지로 */
+
+        #v_pay_bank     { top: 440px; left: 110px; } /* 자동납부: 자동이체 */
+        #v_pay_card     { top: 440px; left: 305px; } /* 자동납부: 신용카드 */
+
+        /* 텍스트 데이터 좌표 */
+        #f_name         { top: 350px; left: 180px; font-size: 13px; } /* 고객명 */
+        #f_rrn          { top: 350px; left: 430px; font-size: 13px; } /* 주민번호 */
+        #f_phone        { top: 372px; left: 180px; } /* 개통/연락처 */
+        #f_email        { top: 372px; left: 430px; } /* 이메일 */
+        #f_address      { top: 395px; left: 180px; } /* 주소 */
+
+        #f_bankName     { top: 465px; left: 240px; } /* 은행/카드사명 */
+        #f_payNum       { top: 465px; left: 430px; } /* 계좌/카드번호 */
+        #f_payOwner     { top: 508px; left: 180px; } /* 예금주 */
+
+        #f_model        { top: 122px; left: 715px; } /* 모델명 */
+        #f_serial       { top: 140px; left: 715px; } /* 일련번호 */
+        #f_price        { top: 115px; left: 130px; } /* 출고가 */
+        #f_support      { top: 115px; left: 250px; } /* 공시지원금 */
+        #f_principal    { top: 160px; left: 370px; } /* 할부원금 */
+        #f_planName     { top: 250px; left: 110px; } /* 요금상품명 */
+        #f_planFee      { top: 250px; left: 260px; } /* 월정액 요금 */
+        #f_monthPay     { top: 312px; left: 730px; } /* 월 기본납부액 */
+
+        #f_reqPhone     { top: 718px; left: 185px; } /* 번호이동 전화번호 */
+        #f_prevOp       { top: 718px; left: 485px; } /* 변경 전 통신사 */
+
+        #f_sellerName   { top: 38px; left: 810px; } /* 상담사/판매자 */
+
+        /* [우측] 입력 컨트롤 패널 (엑셀 디자인 100% 재현) */
+        .control-panel { flex: 0.8; background: #fff; border: 2px solid #000; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         
-        /* [1] 로그인 화면 */
-        #login-view { text-align: center; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-box { background: white; padding: 50px 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .login-box h2 { margin-top: 0; color: #333; font-size: 24px; margin-bottom: 10px; }
-        .login-box p { color: #666; margin-bottom: 30px; }
-        .login-box input { padding: 15px; font-size: 18px; width: 240px; text-align: center; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; }
-        .login-box input:focus { outline: none; border-color: #007bff; }
-        .login-box button { padding: 15px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; display: block; width: 100%; font-weight: bold; }
-        .login-box button:hover { background: #0056b3; }
-        .login-box .hint { font-size: 14px; color: #999; margin-top: 25px; margin-bottom: 0; }
+        .panel-header { background: #000; color: #fff; padding: 6px 10px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-link { background: #000; color: #fff; border: 1px solid #fff; padding: 2px 8px; font-size: 11px; cursor: pointer; text-decoration: none; }
 
-        /* [2] 단가표 화면 */
-        #price-view { display: none; text-align: center; padding: 30px 15px; width: 100%; max-width: 1000px; margin: 0 auto; box-sizing: border-box; }
-        .page-header { background: #fff; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 15px; border-left: 5px solid #007bff; text-align: left; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-        .page-header h1 { margin: 0; font-size: 20px; color: #333; flex-grow: 1; }
-        .btn-apply { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap; }
-        .btn-apply:hover { background: #218838; transform: translateY(-1px); }
+        .sec-header { background: #1f2a44; color: #fff; padding: 4px 8px; font-size: 12px; font-weight: bold; margin-top: 4px; }
 
-        #price-view img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.07); margin-bottom: 35px; display: block; margin-left: auto; margin-right: auto; cursor: zoom-in; }
+        .ctrl-table { width: 100%; border-collapse: collapse; }
+        .ctrl-table th, .ctrl-table td { border: 1px solid #777; padding: 3px 5px; font-size: 11px; }
+        .ctrl-table th { background: #1f2a44; color: #fff; text-align: center; width: 25%; font-weight: normal; }
+        .ctrl-table td { background: #fff; }
+        .ctrl-table input, .ctrl-table select { width: 100%; border: none; outline: none; font-size: 11px; font-weight: bold; background: transparent; }
 
-        /* [3] 개통 신청 독립 페이지 (좌우 50:50 레이아웃) */
-        #apply-view { display: none; width: 100%; max-width: 1700px; margin: 0 auto; padding: 30px 15px; box-sizing: border-box; }
-        .apply-card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .apply-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
-        .apply-header h2 { margin: 0; font-size: 22px; color: #333; }
-        .btn-back { background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: bold; }
-        .btn-back:hover { background: #5a6268; }
+        /* 안내 문구 및 PDF 생성 버튼 */
+        .info-box { background: #d9e1f2; border: 1px solid #8ea9db; padding: 8px; font-size: 11px; line-height: 1.4; color: #000; }
+        .info-box ul { margin: 3px 0 0 15px; padding: 0; }
 
-        .apply-section-header { background: #f8f9fa; padding: 12px 18px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
-        .apply-section-header h3 { margin: 0; font-size: 16px; color: #333; }
-        
-        .example-container { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 25px; }
-        .example-container img { height: 180px; border-radius: 6px; border: 1px solid #ddd; cursor: zoom-in; transition: transform 0.2s; }
-        .example-container img:hover { transform: scale(1.02); }
+        .btn-pdf { background: #1f4e78; color: #fff; border: none; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; margin-top: 5px; }
+        .btn-pdf:hover { background: #113355; }
 
-        /* 50:50 좌우 분할 레이아웃 */
-        .split-layout { display: flex; gap: 30px; align-items: flex-start; }
-        
-        /* 좌측: 실시간 미리보기 (캔버스) */
-        .preview-area { flex: 1; text-align: center; background: #e9ecef; padding: 20px; border-radius: 8px; position: relative; }
-        .preview-area canvas { width: 100%; max-width: 700px; height: auto; border: 1px solid #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #fff; cursor: crosshair; }
+        /* [하단] 통신사 서식지 선택 탭 바 */
+        .bottom-tab-bar { height: 45px; background: #000; display: flex; align-items: center; padding: 0 10px; gap: 4px; overflow-x: auto; }
+        .nav-tab { padding: 6px 12px; background: #0070c0; color: #fff; font-size: 11px; font-weight: bold; border-radius: 3px 3px 0 0; border: none; cursor: pointer; white-space: nowrap; }
+        .nav-tab.active { background: #ffc000; color: #000; }
+        .nav-tab.dark { background: #333; }
 
-        /* 우측: 정보 입력 폼 및 하단 썸네일 */
-        .form-workspace { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .form-inputs { background: #fafafa; padding: 20px; border-radius: 8px; border: 1px solid #eee; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-group { margin-bottom: 12px; }
-        .form-group.full { grid-column: span 2; }
-        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
-        .form-group input[type="text"], .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; background: #fff; }
-        
-        .radio-options { display: flex; gap: 20px; padding-top: 8px; }
-        .radio-options label { font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .radio-options input { width: 16px; height: 16px; cursor: pointer; }
-
-        .btn-submit { background: #007bff; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
-        .btn-submit:hover { background: #0056b3; }
-
-        /* 하단 가로 썸네일 (우측 폼 아래 배치) */
-        .thumbs-bottom { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
-        .thumb-box { text-align: center; font-size: 13px; color: #666; font-weight: bold; cursor: pointer; flex: 1; min-width: 120px; }
-        .thumb-img { width: 100%; border-radius: 6px; border: 2px solid #ddd; transition: all 0.2s; background: #fff; max-height: 200px; object-fit: cover; }
-        .thumb-img.active { border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.5); }
-
-        /* [4] 이미지 확대 모달 */
-        .modal { display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; overflow-y: auto; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
-        .modal-content { margin: 40px auto; display: block; width: 95%; max-width: 1100px; height: auto; border-radius: 6px; }
-        .close-btn { position: fixed; top: 15px; right: 20px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 100000; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.5); width: 45px; height: 45px; line-height: 40px; text-align: center; border-radius: 50%; }
-
-        /* [5] 🎛️ 좌표 조정 스튜디오 패널 */
-        #coord-studio { display: none; position: fixed; right: 20px; bottom: 20px; width: 280px; background: #222; color: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); font-size: 13px; z-index: 90000; }
-        #coord-studio h4 { margin: 0 0 10px 0; color: #007bff; display: flex; justify-content: space-between; align-items: center; }
-        .studio-row { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .studio-row select { width: 100%; padding: 6px; border-radius: 4px; background: #333; color: #fff; border: 1px solid #555; }
-        .studio-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 130px; margin: 10px auto; }
-        .studio-pad button { padding: 8px; background: #444; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .studio-pad button:hover { background: #007bff; }
-        .coord-display { font-family: monospace; background: #111; padding: 6px; border-radius: 4px; text-align: center; margin-top: 5px; color: #00ffcc; }
-        .studio-export { margin-top: 8px; font-size: 10px; color: #aaa; word-break: break-all; background: #000; padding: 5px; border-radius: 4px; max-height: 60px; overflow-y: auto; }
-
-        @media (max-width: 1024px) {
-            .split-layout { flex-direction: column; }
-            .preview-area { width: 100%; order: -1; }
-            .form-grid { grid-template-columns: 1fr; }
-            .form-group.full { grid-column: span 1; }
+        @media print {
+            body { padding: 0; background: #fff; }
+            .control-panel, .bottom-tab-bar { display: none !important; }
+            .container { display: block; }
+            .sheet-section { padding: 0; background: #fff; }
+            .paper-canvas { box-shadow: none; }
         }
     </style>
 </head>
-<body onload="initApp()">
+<body>
 
-    <!-- [1] 로그인 화면 -->
-    <div id="login-view">
-        <div class="login-box">
-            <h2>🔒 에셀트리 보안 정책실</h2>
-            <p>인증 비밀번호 4자리를 입력하세요.</p>
-            <form action="javascript:void(0);" onsubmit="checkPw(); return false;">
-                <input type="password" id="pw" placeholder="비밀번호 입력" required autofocus>
-                <button type="button" onclick="checkPw()">확인</button>
-            </form>
-            <p class="hint">문의: 이상진 과장 010-5707-7000</p>
+<div class="container">
+    <!-- [좌측] 공식 서식지 미리보기 (입력 시 실시간 글자 + V 체크 생성) -->
+    <div class="sheet-section">
+        <div class="paper-canvas" id="paperCanvas">
+            <!-- V 체크 오버레이 -->
+            <div class="check-v" id="v_work_new"></div>
+            <div class="check-v" id="v_work_mnp"></div>
+            <div class="check-v" id="v_work_chg"></div>
+
+            <div class="check-v" id="v_cust_p"></div>
+            <div class="check-v" id="v_cust_b"></div>
+            <div class="check-v" id="v_cust_c"></div>
+
+            <div class="check-v" id="v_gender_m"></div>
+            <div class="check-v" id="v_gender_f"></div>
+
+            <div class="check-v" id="v_bill_mms"></div>
+            <div class="check-v" id="v_bill_email"></div>
+            <div class="check-v" id="v_bill_giro"></div>
+
+            <div class="check-v" id="v_pay_bank"></div>
+            <div class="check-v" id="v_pay_card"></div>
+
+            <!-- 텍스트 오버레이 -->
+            <div class="field" id="f_name"></div>
+            <div class="field" id="f_rrn"></div>
+            <div class="field" id="f_phone"></div>
+            <div class="field" id="f_email"></div>
+            <div class="field" id="f_address"></div>
+
+            <div class="field" id="f_bankName"></div>
+            <div class="field" id="f_payNum"></div>
+            <div class="field" id="f_payOwner"></div>
+
+            <div class="field" id="f_model"></div>
+            <div class="field" id="f_serial"></div>
+            <div class="field" id="f_price"></div>
+            <div class="field" id="f_support"></div>
+            <div class="field" id="f_principal"></div>
+            <div class="field" id="f_planName"></div>
+            <div class="field" id="f_planFee"></div>
+            <div class="field" id="f_monthPay"></div>
+
+            <div class="field" id="f_reqPhone"></div>
+            <div class="field" id="f_prevOp"></div>
+            <div class="field" id="f_sellerName"></div>
         </div>
     </div>
 
-    <!-- [2] 단가표 화면 (원본 100% 동일 복원) -->
-    <div id="price-view">
-        <div class="page-header">
-            <h1>KT MNO 외국인전용 정책표</h1>
-            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
+    <!-- [우측] 입력 컨트롤 패널 (엑셀 디자인과 100% 동일) -->
+    <div class="control-panel">
+        <div class="panel-header">
+            <span>M mobile이용신청서</span>
+            <button class="btn-link">요금제 바로보기</button>
         </div>
-        <img src="price_01.png" alt="에셀트리 단가표 1" onclick="openModal(this)">
 
-        <div class="page-header">
-            <h1>LG MNO 외국인전용 정책표</h1>
-            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
-        </div>
-        <img src="price_02.png" alt="에셀트리 단가표 2" onclick="openModal(this)">
+        <!-- 요금제 & 유심정보 -->
+        <div class="sec-header">▼ 요금제&유심정보</div>
+        <table class="ctrl-table">
+            <tr>
+                <th>요금제선택</th>
+                <td><input type="text" id="in_planName" value="5G M 프리미엄 200GB" oninput="syncAll()"></td>
+                <th>유심비용</th>
+                <td>
+                    <select id="in_usimPay" onchange="syncAll()">
+                        <option value="비구매">비구매</option>
+                        <option value="선납">선납</option>
+                        <option value="후청구">후청구</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>유심일련번호</th>
+                <td><input type="text" id="in_usimSerial" placeholder="일련번호 입력" oninput="syncAll()"></td>
+                <th>가입비 선택</th>
+                <td>
+                    <select id="in_joinFee" onchange="syncAll()">
+                        <option value="일시불">일시불</option>
+                        <option value="면제">면제</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
 
-        <div class="page-header">
-            <h1>알뜰모바일 대기업 자회사</h1>
-            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
-        </div>
-        <img src="price_03.png" alt="에셀트리 단가표 3" onclick="openModal(this)">
+        <!-- 고객정보 -->
+        <div class="sec-header">▼ 고객정보</div>
+        <table class="ctrl-table">
+            <tr>
+                <th>고객구분</th>
+                <td>
+                    <select id="in_custType" onchange="syncAll()">
+                        <option value="개인">개인</option>
+                        <option value="개인사업자">개인사업자</option>
+                        <option value="법인">법인</option>
+                    </select>
+                </td>
+                <th>성별</th>
+                <td>
+                    <select id="in_gender" onchange="syncAll()">
+                        <option value="남">남</option>
+                        <option value="여">여</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>가입자명</th>
+                <td><input type="text" id="in_name" placeholder="가입자명 입력" oninput="syncAll()"></td>
+                <th>생년월일</th>
+                <td><input type="text" id="in_rrn" placeholder="주민번호 전체" oninput="syncAll()"></td>
+            </tr>
+            <tr>
+                <th>주소</th>
+                <td colspan="3"><input type="text" id="in_address" placeholder="주민등록상 주소" oninput="syncAll()"></td>
+            </tr>
+            <tr>
+                <th>개통번호</th>
+                <td><input type="text" id="in_phone" placeholder="010-0000-0000" oninput="syncAll()"></td>
+                <th>연락처</th>
+                <td><input type="text" id="in_subPhone" placeholder="비상연락처" oninput="syncAll()"></td>
+            </tr>
+            <tr>
+                <th>개통구분</th>
+                <td>
+                    <select id="in_workType" onchange="syncAll()">
+                        <option value="신규">신규가입</option>
+                        <option value="번호이동" selected>번호이동</option>
+                        <option value="기기변경">기기변경</option>
+                    </select>
+                </td>
+                <th>이전통신사</th>
+                <td>
+                    <select id="in_prevOp" onchange="syncAll()">
+                        <option value="SKT">SKT</option>
+                        <option value="KT">KT</option>
+                        <option value="LGU+" selected>LGU+</option>
+                        <option value="알뜰폰">알뜰폰</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>명세서종류</th>
+                <td colspan="3">
+                    <select id="in_billType" onchange="syncAll()">
+                        <option value="MMS">MMS</option>
+                        <option value="이메일">이메일</option>
+                        <option value="지로">지로</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
 
-        <div class="page-header">
-            <h1>알뜰모바일 중소기업</h1>
-            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
-        </div>
-        <img src="price_04.png" alt="에셀트리 단가표 4" onclick="openModal(this)">
+        <!-- 자동이체 -->
+        <div class="sec-header">▼ 자동이체</div>
+        <table class="ctrl-table">
+            <tr>
+                <th>납부방식</th>
+                <td colspan="3">
+                    <select id="in_payMethod" onchange="syncAll()">
+                        <option value="자동이체">자동이체(은행)</option>
+                        <option value="신용카드">신용카드</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>예금주명</th>
+                <td style="background:#800000; color:#fff; font-weight:bold; text-align:center;">예금주명 자필기재</td>
+                <th>생년월일</th>
+                <td><input type="text" id="in_payOwnerRrn" placeholder="생년월일" oninput="syncAll()"></td>
+            </tr>
+            <tr>
+                <th>은행/카드사명</th>
+                <td><input type="text" id="in_bankName" placeholder="KB국민은행" oninput="syncAll()"></td>
+                <th>계좌/카드번호</th>
+                <td><input type="text" id="in_payNum" placeholder="계좌번호" oninput="syncAll()"></td>
+            </tr>
+        </table>
 
-        <div class="page-header">
-            <h1>KT M모바일 A175 단말기</h1>
-            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
-        </div>
-        <img src="price_05.png" alt="에셀트리 단가표 5" onclick="openModal(this)">
+        <!-- 부가기능 -->
+        <div class="sec-header">▼ 부가기능</div>
+        <table class="ctrl-table">
+            <tr>
+                <th>아무나결합</th>
+                <td>
+                    <select id="in_combine" onchange="syncAll()">
+                        <option value="신청">신청</option>
+                        <option value="미신청">미신청</option>
+                    </select>
+                </td>
+                <th>캐치콜 신청</th>
+                <td>
+                    <select id="in_catchcall" onchange="syncAll()">
+                        <option value="신청">신청</option>
+                        <option value="미신청">미신청</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
 
-        <div class="page-header">
-            <h1>선불</h1>
-            <button class="btn-apply" onclick="showApplyPage()">개통하러 가기 🚀</button>
+        <!-- 판매자정보 -->
+        <div class="sec-header">▼ 판매자정보</div>
+        <table class="ctrl-table">
+            <tr>
+                <th>판매점상호</th>
+                <td><input type="text" id="in_storeName" placeholder="상호명" oninput="syncAll()"></td>
+                <th>판매자명</th>
+                <td><input type="text" id="in_sellerName" placeholder="상담사명" oninput="syncAll()"></td>
+            </tr>
+        </table>
+
+        <!-- 안내문구 -->
+        <div class="info-box">
+            <b>※ 고객서명 및 판매자 서명 필수 자필로 기재 바랍니다</b>
+            <ul>
+                <li style="color:red; font-weight:bold;">필수 자필로 작성!!</li>
+                <li style="color:blue; font-weight:bold;">5G 요금제 필수 자필로 작성!!</li>
+                <li style="color:red; font-weight:bold;">제휴 요금제 필수 자필로 작성!!</li>
+            </ul>
         </div>
-        <img src="price_06.png" alt="에셀트리 단가표 6" onclick="openModal(this)">
+
+        <!-- PDF / JPG 생성 버튼 -->
+        <button class="btn-pdf" onclick="generatePDF()">PDF / JPG 생성</button>
     </div>
+</div>
 
-    <!-- [3] 개통 신청 독립 페이지 -->
-    <div id="apply-view">
-        <div class="apply-card">
-            <div class="apply-header">
-                <h2>📝 개통 신청서 작성</h2>
-                <button class="btn-back" onclick="showPricePage()">◀ 단가표로 돌아가기</button>
-            </div>
+<!-- [하단] 서식지 전환 탭 바 -->
+<div class="bottom-tab-bar">
+    <button class="nav-tab active">엠모바일신청서</button>
+    <button class="nav-tab">엠모바일(청소년)신청서</button>
+    <button class="nav-tab">KTM(단말)</button>
+    <button class="nav-tab">KTM(청소년단말)</button>
+    <button class="nav-tab dark">스카이신청서</button>
+    <button class="nav-tab dark">스테이지신청서</button>
+    <button class="nav-tab" style="background:#002060;">프리티LG신청서</button>
+    <button class="nav-tab" style="background:#ff0000;">프리티SK신청서</button>
+    <button class="nav-tab dark">U모바일후불요금제</button>
+</div>
 
-            <!-- 작성 예시 영역 -->
-            <div class="apply-section-header">
-                <h3>📖 작성예시 (이미지를 클릭하면 크게 확대됩니다)</h3>
-            </div>
-            <div class="example-container">
-                <img src="1.jpg" alt="작성예시 1" onclick="openModal(this)">
-                <img src="2.jpg" alt="작성예시 2" onclick="openModal(this)">
-                <img src="3.jpg" alt="작성예시 3" onclick="openModal(this)">
-                <img src="4.jpg" alt="작성예시 4" onclick="openModal(this)">
-            </div>
+<script>
+    // 오버레이 및 V 체크 실시간 매핑 함수
+    function syncAll() {
+        // 1. V 체크박스 초기화
+        const checkIds = ['v_work_new', 'v_work_mnp', 'v_work_chg', 'v_cust_p', 'v_cust_b', 'v_cust_c', 'v_gender_m', 'v_gender_f', 'v_bill_mms', 'v_bill_email', 'v_bill_giro', 'v_pay_bank', 'v_pay_card'];
+        checkIds.forEach(id => document.getElementById(id).innerText = '');
 
-            <!-- 좌우 분할 레이아웃 컨테이너 -->
-            <div class="split-layout">
-                
-                <!-- 좌측: 실시간 캔버스 미리보기 -->
-                <div class="preview-area">
-                    <p style="margin: 0 0 10px 0; font-size:14px; color:#555; font-weight:bold;">[실시간 서식지 자동 작성 미리보기]</p>
-                    <canvas id="formCanvas" width="1200" height="1600"></canvas>
-                </div>
+        // 2. 업무구분 체크
+        const workType = document.getElementById('in_workType').value;
+        if (workType === '신규') document.getElementById('v_work_new').innerText = 'V';
+        else if (workType === '번호이동') document.getElementById('v_work_mnp').innerText = 'V';
+        else if (workType === '기기변경') document.getElementById('v_work_chg').innerText = 'V';
 
-                <!-- 우측: 정보입력칸 및 하단 썸네일 -->
-                <div class="form-workspace">
-                    <div class="apply-section-header" style="margin-bottom: 0;">
-                        <h3>✍️ 서식지 정보 입력</h3>
-                    </div>
-                    
-                    <div class="form-inputs">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>고객성명</label>
-                                <input type="text" id="custName" placeholder="홍길동" oninput="renderCanvas()">
-                            </div>
-                            <div class="form-group">
-                                <label>성별 선택</label>
-                                <div class="radio-options">
-                                    <label><input type="radio" name="gender" value="M" checked onchange="renderCanvas()"> 남성 (체크)</label>
-                                    <label><input type="radio" name="gender" value="F" onchange="renderCanvas()"> 여성 (체크)</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>가입 유형</label>
-                                <div class="radio-options">
-                                    <label><input type="radio" name="joinType" value="NEW" checked onchange="renderCanvas()"> 신규가입</label>
-                                    <label><input type="radio" name="joinType" value="MNP" onchange="renderCanvas()"> 번호이동</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>생년월일 / 외국인등록번호</label>
-                                <input type="text" id="custBirth" placeholder="011129" oninput="renderCanvas()">
-                            </div>
-                            <div class="form-group full">
-                                <label>주소</label>
-                                <input type="text" id="custAddr" placeholder="서울시 중구 장충단로..." oninput="renderCanvas()">
-                            </div>
-                            <div class="form-group full">
-                                <label>요금제 선택 (KT MNO)</label>
-                                <select id="planSelect" onchange="renderCanvas()">
-                                    <option value="WELCOME_1">5G 웰컴 1 (39,000원 / 약정 29,250원)</option>
-                                    <option value="WELCOME_3">5G 웰컴 3 (49,000원 / 약정 36,750원)</option>
-                                    <option value="WELCOME_5">5G 웰컴 5 (59,000원 / 약정 44,250원)</option>
-                                    <option value="PLAN_37K">월 요금 37K 이상 (37,000원 / 약정 27,750원)</option>
-                                    <option value="PLAN_49K">월 요금 49K 이상 (49,000원 / 약정 36,750원)</option>
-                                    <option value="PLAN_55K">월 요금 55K 이상 (55,000원 / 약정 45,750원)</option>
-                                    <option value="PLAN_69K">월 요금 69K 이상 (69,000원 / 약정 51,750원)</option>
-                                    <option value="PLAN_90K">월 요금 90K 이상 (90,000원 / 약정 67,500원)</option>
-                                    <option value="PLAN_110K">월 요금 110K 이상 (110,000원 / 약정 82,500원)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>자동이체 (은행/카드사명)</label>
-                                <input type="text" id="bankName" placeholder="하나은행" oninput="renderCanvas()">
-                            </div>
-                            <div class="form-group">
-                                <label>계좌번호 / 카드번호</label>
-                                <input type="text" id="bankNum" placeholder="123-456-7890" oninput="renderCanvas()">
-                            </div>
-                            <div class="form-group">
-                                <label>판매자(점주명)</label>
-                                <input type="text" id="sellerName" placeholder="사가르" oninput="renderCanvas()">
-                            </div>
-                            <div class="form-group">
-                                <label>신청일자 (기본 오늘날짜)</label>
-                                <input type="text" id="applyDate" placeholder="YYYY.MM.DD" oninput="renderCanvas()">
-                            </div>
-                        </div>
+        // 3. 고객구분 체크
+        const custType = document.getElementById('in_custType').value;
+        if (custType === '개인') document.getElementById('v_cust_p').innerText = 'V';
+        else if (custType === '개인사업자') document.getElementById('v_cust_b').innerText = 'V';
+        else if (custType === '법인') document.getElementById('v_cust_c').innerText = 'V';
 
-                        <button class="btn-submit" onclick="downloadAllJPGs()">📥 작성 완료 및 서식지 4장 JPG 일괄 다운로드</button>
-                    </div>
+        // 4. 성별 체크
+        const gender = document.getElementById('in_gender').value;
+        if (gender === '남') document.getElementById('v_gender_m').innerText = 'V';
+        else if (gender === '여') document.getElementById('v_gender_f').innerText = 'V';
 
-                    <!-- 서식지 선택 (가로 배치) -->
-                    <div class="apply-section-header" style="margin-top: 10px; margin-bottom: 5px;">
-                        <h3>📄 작성할 서식지 미리보기 (클릭하여 이동)</h3>
-                    </div>
-                    <div class="thumbs-bottom">
-                        <div class="thumb-box" onclick="selectForm(1)">
-                            <img src="form_01.jpg" class="thumb-img active" id="thumb1" onerror="this.src='1.jpg'">
-                            <br><span>1. KT 서비스신청서</span>
-                        </div>
-                        <div class="thumb-box" onclick="selectForm(2)">
-                            <img src="form_02.jpg" class="thumb-img" id="thumb2" onerror="this.src='2.jpg'">
-                            <br><span>2. KT 무선신청서</span>
-                        </div>
-                        <div class="thumb-box" onclick="selectForm(3)">
-                            <img src="form_03.jpg" class="thumb-img" id="thumb3" onerror="this.src='3.jpg'">
-                            <br><span>3. 개인정보동의(1)</span>
-                        </div>
-                        <div class="thumb-box" onclick="selectForm(4)">
-                            <img src="form_04.jpg" class="thumb-img" id="thumb4" onerror="this.src='4.jpg'">
-                            <br><span>4. 개인정보동의(2)</span>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </div>
-    </div>
+        // 5. 명세서종류 체크
+        const billType = document.getElementById('in_billType').value;
+        if (billType === 'MMS') document.getElementById('v_bill_mms').innerText = 'V';
+        else if (billType === '이메일') document.getElementById('v_bill_email').innerText = 'V';
+        else if (billType === '지로') document.getElementById('v_bill_giro').innerText = 'V';
 
-    <!-- [4] 이미지 확대 모달 -->
-    <div id="imageModal" class="modal" onclick="closeModal(event)">
-        <span class="close-btn" onclick="closeModal(event)">&times;</span>
-        <img class="modal-content" id="modalImg">
-    </div>
+        // 6. 자동납부 체크
+        const payMethod = document.getElementById('in_payMethod').value;
+        if (payMethod === '자동이체') document.getElementById('v_pay_bank').innerText = 'V';
+        else if (payMethod === '신용카드') document.getElementById('v_pay_card').innerText = 'V';
 
-    <!-- [5] 🎛️ 좌표 조정 스튜디오 패널 -->
-    <div id="coord-studio">
-        <h4>🎯 좌표 미세조정 툴 <label style="font-size:11px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="debugToggle" onchange="renderCanvas()"> 🐞 디버그</label></h4>
-        <div class="studio-row">
-            <select id="targetItemSelect" onchange="updateStudioDisplay()"></select>
-        </div>
-        <div class="studio-pad">
-            <div></div>
-            <button onclick="moveCoord(0, -1)">▲</button>
-            <div></div>
-            <button onclick="moveCoord(-1, 0)">◀</button>
-            <button onclick="moveCoord(0, 1)">▼</button>
-            <button onclick="moveCoord(1, 0)">▶</button>
-        </div>
-        <div class="coord-display" id="coordValDisplay">X: 0, Y: 0</div>
-        <div class="studio-export" id="studioExport">코드용 좌표 출력창</div>
-    </div>
+        // 7. 텍스트 필드 값 매핑
+        document.getElementById('f_name').innerText = document.getElementById('in_name').value;
+        document.getElementById('f_rrn').innerText = document.getElementById('in_rrn').value;
+        document.getElementById('f_phone').innerText = document.getElementById('in_phone').value;
+        document.getElementById('f_address').innerText = document.getElementById('in_address').value;
+        document.getElementById('f_planName').innerText = document.getElementById('in_planName').value;
+        document.getElementById('f_bankName').innerText = document.getElementById('in_bankName').value;
+        document.getElementById('f_payNum').innerText = document.getElementById('in_payNum').value;
+        document.getElementById('f_payOwner').innerText = document.getElementById('in_payOwner').value ? document.getElementById('in_payOwner').value : '';
+        document.getElementById('f_prevOp').innerText = document.getElementById('in_prevOp').value;
+        document.getElementById('f_sellerName').innerText = document.getElementById('in_sellerName').value;
+    }
 
-    <script>
-        var isDevMode = false;
-        var mouseCoord = null;
+    // PDF / JPG 이미지 생성 다운로드
+    function generatePDF() {
+        const name = document.getElementById('in_name').value || '신청서';
+        const canvas = document.getElementById('paperCanvas');
 
-        const PLAN_DATA = {
-            WELCOME_1: { name: "5G 웰컴 1 (구간 37K)", price: "39,000원", discount: "29,250원" },
-            WELCOME_3: { name: "5G 웰컴 3 (구간 55K)", price: "49,000원", discount: "36,750원" },
-            WELCOME_5: { name: "5G 웰컴 5 (구간 69K)", price: "59,000원", discount: "44,250원" },
-            PLAN_37K:  { name: "월 요금 37K 이상",     price: "37,000원", discount: "27,750원" },
-            PLAN_49K:  { name: "월 요금 49K 이상",     price: "49,000원", discount: "36,750원" },
-            PLAN_55K:  { name: "월 요금 55K 이상",     price: "55,000원", discount: "45,750원" },
-            PLAN_69K:  { name: "월 요금 69K 이상",     price: "69,000원", discount: "51,750원" },
-            PLAN_90K:  { name: "월 요금 90K 이상",     price: "90,000원", discount: "67,500원" },
-            PLAN_110K: { name: "월 요금 110K 이상",    price: "110,000원", discount: "82,500원" }
-        };
+        html2canvas(canvas, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => {
+            const link = document.createElement('a');
+            link.download = `Mmobile_신청서_${name}.jpg`;
+            link.href = cvs.toDataURL('image/jpeg', 0.95);
+            link.click();
+        });
+    }
 
-        const FORM_CONFIG = {
-            FORM1: {
-                checkMobileNew:  { x: 747,  y: 97,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                checkAgent:      { x: 1042, y: 94,   font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                sellerSign1:     { x: 904,  y: 166,  font: "bold 20px 'Malgun Gothic'" },
-                custSign1:       { x: 904,  y: 218,  font: "bold 20px 'Malgun Gothic'" },
-                custSign2:       { x: 904,  y: 278,  font: "bold 20px 'Malgun Gothic'" },
-                custSignCombine: { x: 950,  y: 728,  font: "bold 20px 'Malgun Gothic'" },
-                custName:        { x: 276,  y: 798,  font: "bold 20px 'Malgun Gothic'" },
-                custBirth:       { x: 565,  y: 784,  font: "bold 20px 'Malgun Gothic'" },
-                genderMale:      { x: 831,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                genderFemale:    { x: 866,  y: 778,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                custAddr:        { x: 277,  y: 853,  font: "bold 20px 'Malgun Gothic'" },
-                payOwner:        { x: 526,  y: 1056, font: "bold 20px 'Malgun Gothic'" },
-                payBirth:        { x: 1009, y: 1055, font: "bold 20px 'Malgun Gothic'" },
-                payBankInfo:     { x: 630,  y: 1087, font: "bold 20px 'Malgun Gothic'" },
-                paySign:         { x: 849,  y: 1206, font: "bold 20px 'Malgun Gothic'" },
-                bottomCustSign:  { x: 913,  y: 1505, font: "bold 20px 'Malgun Gothic'" },
-                bottomDateStr:   { x: 117,  y: 1481, font: "bold 16px 'Malgun Gothic'" },
-                bottomSeller:    { x: 118,  y: 1504, font: "bold 16px 'Malgun Gothic'" }
-            },
-            FORM2: {
-                checkJoinNew:    { x: 920, y: 103,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                checkJoinMNP:    { x: 973, y: 103,  font: "bold 16px 'Malgun Gothic'", text: "✔" },
-                deviceCustName:  { x: 898, y: 505,  font: "bold 20px 'Malgun Gothic'" },
-                midCustSign:     { x: 907, y: 1371, font: "bold 20px 'Malgun Gothic'" },
-                applyDateStr:    { x: 135, y: 1544, font: "bold 20px 'Malgun Gothic'" },
-                planName:        { x: 250, y: 255,  font: "bold 18px 'Malgun Gothic'" },
-                planPrice:       { x: 250, y: 295,  font: "bold 18px 'Malgun Gothic'" },
-                planDiscount:    { x: 250, y: 335,  font: "bold 18px 'Malgun Gothic'" }
-            },
-            FORM3: {
-                agreeSign1:      { x: 800, y: 98,  font: "bold 20px 'Malgun Gothic'" },
-                agreeSign2:      { x: 800, y: 130, font: "bold 20px 'Malgun Gothic'" },
-                agreeSign3:      { x: 800, y: 380, font: "bold 20px 'Malgun Gothic'" }
-            },
-            FORM4: {
-                agreeSign1:      { x: 800, y: 135, font: "bold 20px 'Malgun Gothic'" },
-                agreeSign2:      { x: 800, y: 235, font: "bold 20px 'Malgun Gothic'" },
-                agreeSign3:      { x: 800, y: 508, font: "bold 20px 'Malgun Gothic'" },
-                agreeSign4:      { x: 800, y: 668, font: "bold 20px 'Malgun Gothic'" },
-                agreeSign5:      { x: 800, y: 755, font: "bold 20px 'Malgun Gothic'" },
-                agreeSign6:      { x: 800, y: 875, font: "bold 20px 'Malgun Gothic'" },
-                agreeSign7:      { x: 800, y: 948, font: "bold 20px 'Malgun Gothic'" }
-            }
-        };
+    // 최초 실행 시 매핑 실행
+    window.onload = syncAll;
+</script>
 
-        var currentFormIdx = 1;
-
-        function initApp() {
-            initTodayDate();
-            populateStudioSelect();
-            initCanvasMouseEvents();
-        }
-
-        function initTodayDate() {
-            var today = new Date();
-            var yyyy = today.getFullYear();
-            var mm = String(today.getMonth() + 1).padStart(2, '0');
-            var dd = String(today.getDate()).padStart(2, '0');
-            var dateInput = document.getElementById("applyDate");
-            if(dateInput && !dateInput.value) {
-                dateInput.value = yyyy + "." + mm + "." + dd;
-            }
-        }
-
-        function checkPw() {
-            var input = document.getElementById('pw').value;
-            if(input === "7000") {
-                isDevMode = false;
-                document.getElementById('login-view').style.setProperty('display', 'none', 'important');
-                showPricePage();
-            } else if(input === "7000dev" || input === "9999") {
-                isDevMode = true;
-                document.getElementById('login-view').style.setProperty('display', 'none', 'important');
-                showPricePage();
-                alert("👨‍💻 개발자 모드로 로그인되었습니다.");
-            } else {
-                alert("비밀번호가 올바르지 않습니다. 이상진과장 010-5707-7000으로 문의하세요.");
-                document.getElementById('pw').value = "";
-                document.getElementById('pw').focus();
-            }
-        }
-
-        function showPricePage() {
-            document.getElementById('price-view').style.display = 'block';
-            document.getElementById('apply-view').style.display = 'none';
-            window.scrollTo(0, 0);
-        }
-
-        function showApplyPage() {
-            document.getElementById('price-view').style.display = 'none';
-            document.getElementById('apply-view').style.display = 'block';
-            
-            var studio = document.getElementById('coord-studio');
-            if(studio) {
-                studio.style.display = isDevMode ? 'block' : 'none';
-            }
-
-            window.scrollTo(0, 0);
-            initTodayDate();
-            selectForm(1);
-        }
-
-        function openModal(imgElement) {
-            var modal = document.getElementById("imageModal");
-            var modalImg = document.getElementById("modalImg");
-            modal.style.display = "block";
-            modalImg.src = imgElement.src;
-            modal.scrollTop = 0;
-        }
-
-        function closeModal(event) {
-            if (!event || event.target.id === "imageModal" || event.target.className === "close-btn") {
-                document.getElementById("imageModal").style.display = "none";
-            }
-        }
-
-        function selectForm(idx) {
-            currentFormIdx = idx;
-            for(var i=1; i<=4; i++) {
-                var thumb = document.getElementById("thumb" + i);
-                if(thumb) thumb.classList.remove("active");
-            }
-            var activeThumb = document.getElementById("thumb" + idx);
-            if(activeThumb) activeThumb.classList.add("active");
-            
-            populateStudioSelect();
-            renderCanvas();
-        }
-
-        function getFormData() {
-            var genderRadios = document.getElementsByName("gender");
-            var selectedGender = "M";
-            for(var i=0; i<genderRadios.length; i++) {
-                if(genderRadios[i].checked) { selectedGender = genderRadios[i].value; break; }
-            }
-
-            var joinRadios = document.getElementsByName("joinType");
-            var selectedJoin = "NEW";
-            for(var j=0; j<joinRadios.length; j++) {
-                if(joinRadios[j].checked) { selectedJoin = joinRadios[j].value; break; }
-            }
-
-            var selectedPlanKey = document.getElementById("planSelect").value;
-            var planObj = PLAN_DATA[selectedPlanKey] || PLAN_DATA["WELCOME_1"];
-
-            return {
-                name: document.getElementById("custName").value || "홍길동",
-                gender: selectedGender,
-                joinType: selectedJoin,
-                birth: document.getElementById("custBirth").value || "011129",
-                addr: document.getElementById("custAddr").value || "서울시 중구 장충단로...",
-                bank: document.getElementById("bankName").value || "하나은행",
-                bankNum: document.getElementById("bankNum").value || "123-456-7890",
-                seller: document.getElementById("sellerName").value || "사가르",
-                dateStr: document.getElementById("applyDate").value || "2026.07.28",
-                plan: planObj
-            };
-        }
-
-        function initCanvasMouseEvents() {
-            var canvas = document.getElementById("formCanvas");
-            
-            canvas.addEventListener("mousemove", function(e) {
-                if(!isDevMode) return;
-                var rect = canvas.getBoundingClientRect();
-                var scaleX = canvas.width / rect.width;
-                var scaleY = canvas.height / rect.height;
-                
-                var x = Math.round((e.clientX - rect.left) * scaleX);
-                var y = Math.round((e.clientY - rect.top) * scaleY);
-                
-                mouseCoord = { x: x, y: y };
-                renderCanvas();
-            });
-
-            canvas.addEventListener("mouseleave", function() {
-                if(!isDevMode) return;
-                mouseCoord = null;
-                renderCanvas();
-            });
-
-            canvas.addEventListener("click", function(e) {
-                if(!isDevMode || !mouseCoord) return;
-                const itemKey = document.getElementById("targetItemSelect").value;
-                if(!itemKey) return;
-
-                const item = FORM_CONFIG["FORM" + currentFormIdx][itemKey];
-                item.x = mouseCoord.x;
-                item.y = mouseCoord.y;
-                updateStudioDisplay();
-                renderCanvas();
-            });
-        }
-
-        function drawText(ctx, text, itemObj) {
-            if(!itemObj || text === undefined) return;
-            ctx.font = itemObj.font || "bold 20px 'Malgun Gothic'";
-            ctx.fillStyle = "#111111";
-            ctx.fillText(text, itemObj.x, itemObj.y);
-
-            if (isDevMode && document.getElementById("debugToggle").checked) {
-                ctx.save();
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(itemObj.x, itemObj.y, 3, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.fillStyle = "red";
-                ctx.font = "10px sans-serif";
-                ctx.fillText(`(${itemObj.x},${itemObj.y})`, itemObj.x + 5, itemObj.y - 5);
-                ctx.restore();
-            }
-        }
-
-        function drawForm1(ctx, data) {
-            const cfg = FORM_CONFIG.FORM1;
-            drawText(ctx, cfg.checkMobileNew.text, cfg.checkMobileNew);
-            drawText(ctx, cfg.checkAgent.text, cfg.checkAgent);
-            drawText(ctx, data.seller, cfg.sellerSign1);
-            drawText(ctx, data.name, cfg.custSign1);
-            drawText(ctx, data.name, cfg.custSign2);
-            drawText(ctx, data.name, cfg.custSignCombine);
-            drawText(ctx, data.name, cfg.custName);
-            drawText(ctx, data.birth, cfg.custBirth);
-
-            if (data.gender === "M") drawText(ctx, cfg.genderMale.text, cfg.genderMale);
-            else drawText(ctx, cfg.genderFemale.text, cfg.genderFemale);
-
-            drawText(ctx, data.addr, cfg.custAddr);
-            drawText(ctx, data.name, cfg.payOwner);
-            drawText(ctx, data.birth, cfg.payBirth);
-            drawText(ctx, data.bank + " / " + data.bankNum, cfg.payBankInfo);
-            drawText(ctx, data.name, cfg.paySign);
-            drawText(ctx, data.name, cfg.bottomCustSign);
-            drawText(ctx, data.dateStr, cfg.bottomDateStr);
-            drawText(ctx, data.seller, cfg.bottomSeller);
-        }
-
-        function drawForm2(ctx, data) {
-            const cfg = FORM_CONFIG.FORM2;
-            if(data.joinType === "NEW") drawText(ctx, cfg.checkJoinNew.text, cfg.checkJoinNew);
-            else drawText(ctx, cfg.checkJoinMNP.text, cfg.checkJoinMNP);
-
-            drawText(ctx, data.name, cfg.deviceCustName);
-            drawText(ctx, data.name, cfg.midCustSign);
-            drawText(ctx, data.dateStr, cfg.applyDateStr);
-
-            drawText(ctx, data.plan.name, cfg.planName);
-            drawText(ctx, data.plan.price, cfg.planPrice);
-            drawText(ctx, data.plan.discount, cfg.planDiscount);
-        }
-
-        function drawForm3(ctx, data) {
-            const cfg = FORM_CONFIG.FORM3;
-            drawText(ctx, data.name, cfg.agreeSign1);
-            drawText(ctx, data.name, cfg.agreeSign2);
-            drawText(ctx, data.name, cfg.agreeSign3);
-        }
-
-        function drawForm4(ctx, data) {
-            const cfg = FORM_CONFIG.FORM4;
-            drawText(ctx, data.name, cfg.agreeSign1);
-            drawText(ctx, data.name, cfg.agreeSign2);
-            drawText(ctx, data.name, cfg.agreeSign3);
-            drawText(ctx, data.name, cfg.agreeSign4);
-            drawText(ctx, data.name, cfg.agreeSign5);
-            drawText(ctx, data.name, cfg.agreeSign6);
-            drawText(ctx, data.name, cfg.agreeSign7);
-        }
-
-        function renderCanvas() {
-            var canvas = document.getElementById("formCanvas");
-            var ctx = canvas.getContext("2d");
-
-            ctx.fillStyle = "#FFFFFF";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            var data = getFormData();
-            var img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = "form_0" + currentFormIdx + ".jpg";
-
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                if (currentFormIdx === 1) drawForm1(ctx, data);
-                else if (currentFormIdx === 2) drawForm2(ctx, data);
-                else if (currentFormIdx === 3) drawForm3(ctx, data);
-                else if (currentFormIdx === 4) drawForm4(ctx, data);
-
-                if(isDevMode && mouseCoord) {
-                    ctx.save();
-                    ctx.strokeStyle = "rgba(0, 123, 255, 0.7)";
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(mouseCoord.x, 0); ctx.lineTo(mouseCoord.x, canvas.height);
-                    ctx.moveTo(0, mouseCoord.y); ctx.lineTo(canvas.width, mouseCoord.y);
-                    ctx.stroke();
-
-                    var text = `X: ${mouseCoord.x}, Y: ${mouseCoord.y}`;
-                    ctx.font = "bold 16px monospace";
-                    var textWidth = ctx.measureText(text).width;
-                    
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-                    ctx.fillRect(mouseCoord.x + 10, mouseCoord.y - 30, textWidth + 16, 26);
-                    
-                    ctx.fillStyle = "#00ffcc";
-                    ctx.fillText(text, mouseCoord.x + 18, mouseCoord.y - 12);
-                    ctx.restore();
-                }
-            };
-
-            img.onerror = function() {
-                var retryImg = new Image();
-                retryImg.crossOrigin = "Anonymous";
-                retryImg.src = currentFormIdx + ".jpg";
-                retryImg.onload = function() {
-                    ctx.drawImage(retryImg, 0, 0, canvas.width, canvas.height);
-                    if (currentFormIdx === 1) drawForm1(ctx, data);
-                    else if (currentFormIdx === 2) drawForm2(ctx, data);
-                    else if (currentFormIdx === 3) drawForm3(ctx, data);
-                    else if (currentFormIdx === 4) drawForm4(ctx, data);
-                };
-            };
-        }
-
-        function populateStudioSelect() {
-            const select = document.getElementById("targetItemSelect");
-            select.innerHTML = "";
-            const currentConfig = FORM_CONFIG["FORM" + currentFormIdx];
-            
-            for (let key in currentConfig) {
-                let opt = document.createElement("option");
-                opt.value = key;
-                opt.innerText = `[서식${currentFormIdx}] ${key}`;
-                select.appendChild(opt);
-            }
-            updateStudioDisplay();
-        }
-
-        function updateStudioDisplay() {
-            const itemKey = document.getElementById("targetItemSelect").value;
-            if(!itemKey) return;
-            const item = FORM_CONFIG["FORM" + currentFormIdx][itemKey];
-            document.getElementById("coordValDisplay").innerText = `X: ${item.x}, Y: ${item.y}`;
-            document.getElementById("studioExport").innerText = `${itemKey}: { x: ${item.x}, y: ${item.y} }`;
-        }
-
-        function moveCoord(dx, dy) {
-            const itemKey = document.getElementById("targetItemSelect").value;
-            if(!itemKey) return;
-            const item = FORM_CONFIG["FORM" + currentFormIdx][itemKey];
-            item.x += dx;
-            item.y += dy;
-            updateStudioDisplay();
-            renderCanvas();
-        }
-
-        function downloadAllJPGs() {
-            var canvas = document.getElementById("formCanvas");
-            var name = document.getElementById("custName").value || "고객";
-            
-            alert(name + "님의 서식지 4장이 순차적으로 JPG 파일로 다운로드됩니다.");
-
-            var savedIdx = currentFormIdx;
-            var formList = [1, 2, 3, 4];
-            var delay = 0;
-
-            formList.forEach(function(idx) {
-                setTimeout(function() {
-                    currentFormIdx = idx;
-                    renderCanvas();
-                    
-                    setTimeout(function() {
-                        var link = document.createElement('a');
-                        link.download = name + "_개통서식지_0" + idx + ".jpg";
-                        link.href = canvas.toDataURL('image/jpeg', 0.95);
-                        link.click();
-
-                        if (idx === 4) {
-                            selectForm(savedIdx);
-                        }
-                    }, 300);
-                }, delay);
-                delay += 800;
-            });
-        }
-    </script>
 </body>
 </html>
